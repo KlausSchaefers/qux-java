@@ -157,7 +157,7 @@ public class MATC extends AbstractVerticle {
 		
 		
 		logger.error("******************************");
-		logger.error("* MATC6 " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
+		logger.error("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
 		logger.error("******************************");
 	}
 	
@@ -528,7 +528,7 @@ public class MATC extends AbstractVerticle {
 			mail.close();
 			
 			System.out.println("******************************");
-			System.out.println("* MATC STOP                  *");
+			System.out.println("* Quant-UX Server STOP       *");
 			System.out.println("******************************");
 	
 			super.stop();
