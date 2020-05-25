@@ -163,15 +163,6 @@ public class MATC extends AbstractVerticle {
 	
 	private JsonObject getConfig() {
 		JsonObject conf = this.config();
-		
-		if (!conf.containsKey("max.users")) {
-			conf.put("max.users", 100);
-		}
-		
-		if (conf.containsKey("max.users") && conf.getLong("max.users") > 100) {
-			conf.put("max.users", 100);
-		}
-		
 		return conf;
 	}
 
