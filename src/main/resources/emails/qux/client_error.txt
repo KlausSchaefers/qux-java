@@ -1,0 +1,27 @@
+Hello,
+
+there was a error in the client:
+
+Url : {{url}}
+User: {{user}}
+Token: {{token}}
+App: {{appCodeName}} / {{appName}} <br>
+Platform: {{platform}}<br>
+
+Message: {{message}}
+
+--- STACK TRACE ---------------------------------
+{{stack}}
+
+--- User Agent ----------------------------------
+{{ua}}
+
+--- LOGGER QUEUE --------------------------------
+{{queue}}
+
+
+
+--- Plugins -------------------------------------
+{{plugins}}
+
+

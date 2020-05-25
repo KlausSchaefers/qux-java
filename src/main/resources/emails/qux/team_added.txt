@@ -1,0 +1,3 @@
+Dear {{name}},
+
+{{fromEmail}} has shared the '{{appName}}' with you on Quant-UX.com. 

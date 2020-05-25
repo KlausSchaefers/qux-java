@@ -1,0 +1,12 @@
+Hello,
+
+{{name}} send you an contact request:
+
+{{email}}
+
+{{message}}
+
+	
+Best Regards,
+
+Your Quant-UX Team
