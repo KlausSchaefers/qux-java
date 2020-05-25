@@ -517,36 +517,7 @@ public class MATC extends AbstractVerticle {
 			return MailClient.createShared(vertx, mailConfig,config.getString("host"));
 		}
 	}
-	
 
-	public void cleanUpUser(String id) {
-		/**
-		 * Also remove this guy from all teams!!
-		 */
-		JsonObject query =  new JsonObject().put(Team.USER_ID, id);
-		client.removeDocuments(DB.getTable(Team.class), query, res ->{
-			if(res.succeeded()){
-				logger.info("StaffModelRest.delete(User) > Removed entries in team db for user "+ id);
-			} else {
-				logger.error("Could not clean up team db");
-			}
-		});
-		
-		/**
-		 * Also remove notifactions!
-		 */
-		client.removeDocuments(DB.getTable(Notification.class), Notification.findByUser(id), res ->{
-			if(res.succeeded()){
-				logger.info("StaffModelRest.delete(Notification) > Removed entries in team db for user "+ id);
-			} else {
-				logger.error("Could not clean up team db");
-			}
-		});
-	}
-
-	
-	
-	
 	@Override
 	public void stop(){
 	
