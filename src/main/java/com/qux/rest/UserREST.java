@@ -31,9 +31,7 @@ public class UserREST extends MongoREST {
 	private final String imageFolder;
 	
 	private final String team_db;
-	
-	private final long maxUsers;
-	
+
 	private long imageSize = 1024 * 1024;
 	
 	private Logger logger = LoggerFactory.getLogger(UserREST.class);
@@ -42,9 +40,8 @@ public class UserREST extends MongoREST {
 		super(db, User.class);
 		this.imageFolder = conf.getString("image.folder.user");
 		this.imageSize = conf.getLong("image.size");
-		this.maxUsers = conf.getLong("max.users");
 		this.team_db = DB.getTable(Team.class);
-		setACL(new UserAcl(db, this.maxUsers));
+		setACL(new UserAcl(db));
 		setValidator(new UserValidator(db));
 		setPartialUpdate(true);
 	}

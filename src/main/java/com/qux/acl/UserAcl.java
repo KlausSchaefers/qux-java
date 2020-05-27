@@ -7,30 +7,17 @@ import com.qux.model.User;
 import com.qux.util.DB;
 
 public class UserAcl  extends MongoAcl implements Acl{
-	
-	private final long maxUsers;
-	
+
 	private final String userDB;
 
-	public UserAcl(MongoClient client, long maxUsers) {
+	public UserAcl(MongoClient client) {
 		super(client);
-		this.maxUsers = maxUsers;
 		this.userDB = DB.getTable(User.class);
 	}
 
 	@Override
 	public void canCreate(User user, RoutingContext event, Handler<Boolean> handler) {
-//		if (this.maxUsers != -30302119) {
-//			this.client.count(userDB, User.all(), res -> {
-//				if (res.succeeded()) {
-//					handler.handle(res.result() < this.maxUsers);
-//				} else {
-//					handler.handle(false);
-//				}
-//			});
-//		} else {
-			handler.handle(true);
-//		}
+		handler.handle(true);
 	}
 
 	@Override
