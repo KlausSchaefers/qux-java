@@ -48,9 +48,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 	 */
 	private final String from;
 	
-	
-	
-	
+
 	/**
 	 * Mail message fields
 	 */
@@ -115,33 +113,8 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 		this.mail = mail;		
 		this.vertx = vertx;
 
-		System.out.println("Folder: " + new File(MailHandler.TEMPLATE_FOLDER).getAbsolutePath());
-
-		
-		handlebars = new Handlebars();
-
-
 		/**
-		 * Load mail templates here
-		 */		
-		readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
-		readTemplate(templateFolder, TEMPLATE_USER_CREATED);
-		readTemplate(templateFolder, TEMPLATE_TEAM_ADDED);
-		readTemplate(templateFolder, TEMPLATE_CROWD_REQUEST);
-		readTemplate(templateFolder, TEMPLATE_CLIENT_ERROR);
-		readTemplate(templateFolder, TEMPLATE_CONTACT);
-		readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
-		readTemplate(templateFolder, TEMPLATE_USER_LOGN_NOT_PAID);
-		readTemplate(templateFolder, TEMPLATE_HTML_FRAME);
-
-		/**
-		 * Link to event bus.
-		 */
-		EventBus eb = vertx.eventBus();
-		eb.consumer(busAdress, this);		
-		
-		/**
-		 * Create model for validation	
+		 * Create model for validation
 		 */
 		validator = new ModelFactory().create("MailMessage")
 				.addString(FIELD_TO)
@@ -149,6 +122,35 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 				.addString(FIELD_TEMPLATE)
 				.addObject(FIELD_PAYLOAD)
 				.build();
+
+		handlebars = new Handlebars();
+
+		/**
+		 * Load mail templates here. Load as blocking code,
+		 * because in fat-jar the files will be unzipped first.
+		 */
+		vertx.executeBlocking(handler -> {
+			readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
+			readTemplate(templateFolder, TEMPLATE_USER_CREATED);
+			readTemplate(templateFolder, TEMPLATE_TEAM_ADDED);
+			readTemplate(templateFolder, TEMPLATE_CROWD_REQUEST);
+			readTemplate(templateFolder, TEMPLATE_CLIENT_ERROR);
+			readTemplate(templateFolder, TEMPLATE_CONTACT);
+			readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
+			readTemplate(templateFolder, TEMPLATE_USER_LOGN_NOT_PAID);
+			readTemplate(templateFolder, TEMPLATE_HTML_FRAME);
+			handler.complete();
+		}, result -> {
+			logger.info("constructor() > loaded mails...");
+		});
+
+
+		/**
+		 * Link to event bus.
+		 */
+		EventBus eb = vertx.eventBus();
+		eb.consumer(busAdress, this);		
+
 		
 		logger.info("constructor() > exit");
 		
@@ -253,7 +255,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 					String string = b.toString();
 					Template template = handlebars.compileInline(string);
 					this.txtTemplates.put(templateName, template);
-					logger.debug("readTemplate() >  Read : "+ fileName + ".txt! ");
+					logger.info("readTemplate() >  Read : "+ fileName + ".txt! ");
 
 				} catch(Exception e){
 					logger.error("readTemplate() > Could not read : "+ fileName + ".txt! "+e.getMessage());
@@ -273,7 +275,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 					String string = b.toString();
 					Template template = handlebars.compileInline(string);
 					this.htmlTemplates.put(templateName, template);		
-					logger.debug("readTemplate() >  Read : "+ fileName + ".html! ");
+					logger.info("readTemplate() >  Read : "+ fileName + ".html! ");
 				} catch(Exception e){
 					logger.error("readTemplate() > Could not read : "+ fileName + ".html! " +e.getMessage());
 					e.printStackTrace();
