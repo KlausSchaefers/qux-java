@@ -7,7 +7,7 @@
 
 	<properties>
 		<vertx.version>3.9.0</vertx.version>
-		<log4j2.version>2.3</log4j2.version>
+		<log4j2.version>2.13.3</log4j2.version>
 		<handlebars-version>2.2.2</handlebars-version>
 		<maven.test.skip>true</maven.test.skip>
 	</properties>
