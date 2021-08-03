@@ -7,7 +7,7 @@
 
 	<properties>
 		<vertx.version>3.9.0</vertx.version>
-		<log4j2.version>2.3</log4j2.version>
+		<log4j2.version>2.13.3</log4j2.version>
 		<handlebars-version>2.2.2</handlebars-version>
 		<maven.test.skip>true</maven.test.skip>
 	</properties>
@@ -80,7 +80,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
+			<version>4.13.1</version>
 		</dependency>
 
 		<dependency>
