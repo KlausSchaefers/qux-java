@@ -1,3 +1,5 @@
+[![Maven Package](https://github.com/KlausSchaefers/qux-java/actions/workflows/maven-publish.yml/badge.svg)](https://github.com/KlausSchaefers/qux-java/actions/workflows/maven-publish.yml)
+
 # Quant-UX
 
 This is the Quant-UX server backend. To run this you need a MongoDB server and a folder where
