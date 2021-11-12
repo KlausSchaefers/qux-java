@@ -1,6 +1,6 @@
 Hello,
 
-thank you for registering at Quant-UX.com. You can now login at http://www.quant-ux.com/
+thank you for registering at Quant-UX. You can now login at {{{quxServerHost}}}
 
 
 Best Regards,

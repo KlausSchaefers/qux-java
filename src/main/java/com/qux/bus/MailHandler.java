@@ -33,20 +33,18 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 	 * Template folder
 	 */
 	private static final String TEMPLATE_FOLDER = "emails/";
-	
+
 	public static final String MAIl_BUS_QUANT_UX = "matc.mail.send.quant";
-	
-	public static final String MAIl_BUS_KYRA = "matc.mail.send.kyra";
-	
-	/**
-	 * EventBus Address
-	 */
-	public final String busAdress;
-	
+
 	/**
 	 * Default sender
 	 */
 	private final String from;
+
+	/**
+	 * Server where links should point to
+	 */
+	private final String serverHost;
 	
 
 	/**
@@ -69,20 +67,14 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 	public static final String TEMPLATE_PASSWORD_RESET ="reset_password";
 	
 	public static final String TEMPLATE_USER_CREATED ="user_created";
-	
-	public static final String TEMPLATE_USER_LOGN_NOT_PAID ="user_login_not_paid";
 
 	public static final String TEMPLATE_TEAM_ADDED ="team_added";
-	
+
 	public static final String TEMPLATE_LIB_TEAM_ADDED ="lib_team_added";
-	
-	public static final String TEMPLATE_CROWD_REQUEST ="crowd_request";
-	
+
 	public static final String TEMPLATE_CLIENT_ERROR ="client_error";
 
 	public static final String TEMPLATE_CONTACT ="contact";
-
-	public static final String MAIl_TEMPLATE_FOLDER_QUANT_UX ="qux";
 
 	public static final String TEMPLATE_HTML_FRAME ="frame";
 
@@ -100,15 +92,16 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 	
 	public static MailHandler instance;
 	
-	public static MailHandler start(Vertx vertx, MailClient client, String from, String bus, String templateFolder){
+	public static MailHandler start(Vertx vertx, MailClient client, String from, String serverHost){
 	
-		return new MailHandler(vertx, client, from, bus, templateFolder);
+		return new MailHandler(vertx, client, from, serverHost);
 	}
 	
-	public MailHandler(Vertx vertx, MailClient mail, String from, String bus, String templateFolder){	
-		logger.info("constructor() > "  + from + " @ " + bus);
-		this.busAdress = bus;
+	public MailHandler(Vertx vertx, MailClient mail, String from, String serverHost){
+		logger.info("constructor() > "  + from + " @ " + serverHost);
+
 		this.from = from;
+		this.serverHost = serverHost;
 		
 		this.mail = mail;		
 		this.vertx = vertx;
@@ -130,14 +123,12 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 		 * because in fat-jar the files will be unzipped first.
 		 */
 		vertx.executeBlocking(handler -> {
+			String templateFolder = "qux";
 			readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
 			readTemplate(templateFolder, TEMPLATE_USER_CREATED);
 			readTemplate(templateFolder, TEMPLATE_TEAM_ADDED);
-			readTemplate(templateFolder, TEMPLATE_CROWD_REQUEST);
 			readTemplate(templateFolder, TEMPLATE_CLIENT_ERROR);
 			readTemplate(templateFolder, TEMPLATE_CONTACT);
-			readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
-			readTemplate(templateFolder, TEMPLATE_USER_LOGN_NOT_PAID);
 			readTemplate(templateFolder, TEMPLATE_HTML_FRAME);
 			handler.complete();
 		}, result -> {
@@ -149,7 +140,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 		 * Link to event bus.
 		 */
 		EventBus eb = vertx.eventBus();
-		eb.consumer(busAdress, this);		
+		eb.consumer(MAIl_BUS_QUANT_UX, this);
 
 		
 		logger.info("constructor() > exit");
@@ -170,24 +161,28 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 						
 			try{
 				
-				if(txtTemplates.containsKey(templateID) && htmlTemplates.containsKey(templateID)){
+				if (txtTemplates.containsKey(templateID) && htmlTemplates.containsKey(templateID)){
 					MailMessage mm = new MailMessage();
 					mm.setFrom(from);
 					mm.setTo(msg.getString(FIELD_TO));
 					mm.setSubject(msg.getString(FIELD_SUBJECT));
+
 					if(msg.containsKey(FIELD_BCC)){
 						mm.setBcc(msg.getString(FIELD_BCC));
 					}
 
-					if(txtTemplates.containsKey(templateID)){					
+					Map<String, Object> payload = msg.getJsonObject(FIELD_PAYLOAD).getMap();
+					payload.put("quxServerHost", this.serverHost);
+
+					if (txtTemplates.containsKey(templateID)){
 						Template txtTemplate = txtTemplates.get(templateID);	
-						String txt = txtTemplate.apply(msg.getJsonObject(FIELD_PAYLOAD).getMap());
+						String txt = txtTemplate.apply(payload);
 						mm.setText(txt);					
 					}
 					
-					if(htmlTemplates.containsKey(templateID)){
+					if (htmlTemplates.containsKey(templateID)){
 						Template htmlTemplate = htmlTemplates.get(templateID);	
-						String innerHTML = htmlTemplate.apply(msg.getJsonObject(FIELD_PAYLOAD).getMap());
+						String innerHTML = htmlTemplate.apply(payload);
 
 						Template frame = htmlTemplates.get(TEMPLATE_HTML_FRAME);
 						Map<String, String> frameData = new HashMap();

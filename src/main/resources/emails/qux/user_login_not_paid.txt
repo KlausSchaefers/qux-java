@@ -1,8 +1,0 @@
-Hello,
-
-the user {{email}} could not login because he has not paid. Maybe drop him a mail?
-
-	
-Best Regards,
-
-Your Backend

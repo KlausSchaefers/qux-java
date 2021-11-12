@@ -19,9 +19,6 @@ public class ACLErrorLoggingTest extends MatcTestCase {
     public void test_error_mail(TestContext context){
         log("test_error_mail", "enter");
 
-        DebugMailClient.PRINT = true;
-
-
         cleanUp();
 
         deploy(new MATC(), context);
@@ -71,13 +68,13 @@ public class ACLErrorLoggingTest extends MatcTestCase {
          * Assert 3 mails was send. One for signup, two for error. Wait also for the bus to send them
          */
         sleep(1000);
-        log("test_error_mail", "# Mails:" + DebugMailClient.mails.size());
-        context.assertEquals(3, DebugMailClient.mails.size());
+        log("test_error_mail", "# Mails:" + DebugMailClient.getMails().size());
+        context.assertEquals(3, DebugMailClient.getMails().size());
 
         /**
          * Second mail should have ACL printed
          */
-        MailMessage mailMessage2 = DebugMailClient.mails.get(1);
+        MailMessage mailMessage2 = DebugMailClient.getMails().get(1);
         String textMail2 = mailMessage2.getText();
         context.assertTrue(textMail2.contains(klaus_private_app.getId()+ ":3"));
 
@@ -85,7 +82,7 @@ public class ACLErrorLoggingTest extends MatcTestCase {
         /**
          * Third mail should have ACL printed
          */
-        MailMessage mailMessage3 = DebugMailClient.mails.get(2);
+        MailMessage mailMessage3 = DebugMailClient.getMails().get(2);
         String textMail3 = mailMessage3.getText();
         context.assertTrue(textMail3.contains("[] - User is guest"));
 

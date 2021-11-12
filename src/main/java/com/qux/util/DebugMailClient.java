@@ -11,20 +11,26 @@ import java.util.List;
 
 public class DebugMailClient implements MailClient{
 	
-	public static boolean PRINT = true;
+	private boolean printMails = false;
 	
-	private String user;
 
-	public static final List<MailMessage> mails = new ArrayList<>();
 
-	public DebugMailClient(String string) {
-		this.user = string;
+	private static final List<MailMessage> mails = new ArrayList<>();
+
+	public DebugMailClient() {
+
+	}
+
+	public DebugMailClient(boolean print) {
+		this.printMails = print;
 	}
 
 	@Override
 	public void close() {
+	}
 
-		
+	public static List<MailMessage> getMails() {
+		return mails;
 	}
 
 	@Override
@@ -32,7 +38,7 @@ public class DebugMailClient implements MailClient{
 
 		mails.add(mail);
 		
-		if(PRINT){
+		if(printMails){
 			System.out.println("---------------------------------------------------------------------------------- ");
 			System.out.println("");
 			System.out.println("TO      : " + mail.getTo());
@@ -72,7 +78,7 @@ public class DebugMailClient implements MailClient{
 
 	@Override
 	public String toString() {
-		return "DebugMailClient [user=" + user + "]";
+		return "DebugMailClient []";
 	}
 
 }

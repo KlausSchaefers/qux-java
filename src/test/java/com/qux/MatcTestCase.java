@@ -13,10 +13,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import com.qux.acl.Acl;
-import com.qux.util.DB;
-import com.qux.util.DebugMailClient;
-import com.qux.util.JSONMapper;
-import com.qux.util.SyncMongoClient;
+import com.qux.util.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -99,7 +96,7 @@ public class MatcTestCase {
 	public void before(TestContext contex) {
 		try {
 			conf = new JsonObject(new String(readAllBytes(Paths.get("matc.conf"))));
-			conf.getJsonObject("mongo").put("table_prefix", "test");
+			conf.put("mongo.table_prefix", "test");
 			conf.put("image.folder.apps", "test/apps");
 			conf.put("image.folder.user", "test/user");
 		} catch (IOException e) {
@@ -107,10 +104,13 @@ public class MatcTestCase {
 		}
 
 		vertx = Vertx.vertx();
-		mongo = MongoClient.createShared(vertx, conf.getJsonObject("mongo"));
+
+		JsonObject mongoConfig = Config.getMongo(conf);
+		mongo = MongoClient.createShared(vertx,mongoConfig);
 		client = new SyncMongoClient(mongo);
 
 		DB.setPrefix("test");
+
 		app_db = DB.getTable(App.class);
 		user_db = DB.getTable(User.class);
 		commandStack_db = DB.getTable(CommandStack.class);
@@ -131,8 +131,6 @@ public class MatcTestCase {
 		jwt = null;
 
 		httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
-
-		DebugMailClient.PRINT = false;
 
 
 

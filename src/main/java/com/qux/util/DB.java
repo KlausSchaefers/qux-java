@@ -13,7 +13,6 @@ public class DB {
 	}
 	
 	public static void setPrefix(String prefix){
-		System.out.println("DB.setPrefix(" + prefix + ") > enter");
 		DB.prefix = prefix;
 	}
 	

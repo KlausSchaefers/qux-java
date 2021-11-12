@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.qux</groupId>
 	<artifactId>server</artifactId>
-	<version>3.0.4</version>
+	<version>3.2.0</version>
 
 	<properties>
 		<vertx.version>3.9.0</vertx.version>
@@ -131,8 +131,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.12</version>
 		</dependency>
-
-
 
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>

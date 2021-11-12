@@ -2,12 +2,12 @@ package com.qux;
 
 import java.time.LocalDateTime;
 
+import com.qux.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.qux.acl.AppAcl;
 import com.qux.acl.ExamplesAcl;
 import com.qux.acl.InvitationCommentACL;
-import com.qux.bus.AppEventHandler;
 import com.qux.bus.ImageVerticle;
 import com.qux.bus.MailHandler;
 import com.qux.bus.PerformanceHandler;
@@ -15,16 +15,12 @@ import com.qux.bus.PerformanceHandler;
 
 import com.qux.bus.VMHeater;
 import com.qux.model.Annotation;
-import com.qux.model.Notification;
-import com.qux.model.Team;
 import com.qux.model.TestSetting;
-import com.qux.rest.AppEventRest;
 import com.qux.rest.AppPartREST;
 import com.qux.rest.AppREST;
 import com.qux.rest.CommandStackREST;
 import com.qux.rest.CommentREST;
 import com.qux.rest.ContactRest;
-import com.qux.rest.CrowdRest;
 import com.qux.rest.EventRest;
 
 import com.qux.rest.ImageREST;
@@ -40,11 +36,6 @@ import com.qux.rest.TemplateRest;
 import com.qux.rest.TestSettingsRest;
 import com.qux.rest.UserREST;
 
-import com.qux.util.DB;
-import com.qux.util.DebugMailClient;
-
-import com.qux.util.TokenService;
-import com.qux.util.Util;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpMethod;
@@ -64,17 +55,13 @@ import io.vertx.ext.web.handler.CorsHandler;
 public class MATC extends AbstractVerticle {
 	
 	public static final String VERSION = "3.0.4";
-	
-	public static final String BUS_EXPORT = "export.app";
-	
+
 	public static final String BUS_IMAGES_UPLOADED = "images.uploaded";
 
 	private MongoClient client;
 	
 	private MailClient mail;
-	
-	private MailClient mail2;
-	
+
 	private final Logger logger = LoggerFactory.getLogger(MATC.class);
 	
 	private HttpServer server;
@@ -92,7 +79,7 @@ public class MATC extends AbstractVerticle {
 		/**
 		 * Load config
 		 */
-		JsonObject config = this.getConfig();			
+		JsonObject config = this.getConfig();
 		if(config.containsKey("debug")){
 			this.isDebug = config.getBoolean("debug");
 			this.logger.info("start() > isDebug : " + this.isDebug);
@@ -137,7 +124,6 @@ public class MATC extends AbstractVerticle {
 		initAnnotationRest(router, config);
 		initTestRest(router);
 		initTemplate(router,config);
-		initCrowd(router,config);
 		initNotification(router,config);
 		initLibrary(router, config);
 		initBus(config);
@@ -162,9 +148,14 @@ public class MATC extends AbstractVerticle {
 	}
 	
 	private JsonObject getConfig() {
-		JsonObject conf = this.config();
-		return conf;
+		logger.info("getConfig() > Enter");
+		JsonObject config = this.config();
+		JsonObject defaultConfig = Config.setDefaults(config);
+		JsonObject mergedConfig = Config.mergeEncIntoConfig(defaultConfig);
+		return mergedConfig;
 	}
+
+
 
 	private void initStatus(JsonObject config, Router router) {
 		router.route(HttpMethod.GET, "/rest/status.json").handler(event -> {
@@ -199,9 +190,9 @@ public class MATC extends AbstractVerticle {
 
 
 	public void initTokenService (JsonObject config) {
-		if (config.containsKey("jwt")){
-			JsonObject cookieConf = config.getJsonObject("jwt");
-			TokenService.setSecret(cookieConf.getString("password"));
+		if (config.containsKey(Config.JWT_PASSWORD)){
+			String password = config.getString(Config.JWT_PASSWORD);
+			TokenService.setSecret(password);
 		} else {
 			TokenService.setSecret(Util.getRandomString());
 			logger.error("initTokenService() > No key. Use random!"); 
@@ -214,14 +205,6 @@ public class MATC extends AbstractVerticle {
 		NotificationREST rest = new NotificationREST(client);
 		router.route(HttpMethod.GET, "/rest/notifications.json").handler(rest::findByUser);
 	}
-
-
-	private void initCrowd(Router router, JsonObject config) {
-		logger.info("initCrowd() > enter");
-		CrowdRest rest = new CrowdRest(client);
-		router.route(HttpMethod.POST, "/rest/crowd/:appID.json").handler(rest.sendMail());
-	}
-
 
 	private void initExamples(Router router, JsonObject config) {
 		logger.info("initExamples() > enter");
@@ -265,10 +248,13 @@ public class MATC extends AbstractVerticle {
 
 
 	private void initMongo(JsonObject config) {
-		JsonObject mongoConfig = config.getJsonObject("mongo");
-		if(mongoConfig.containsKey("table_prefix")){
-			DB.setPrefix(mongoConfig.getString("table_prefix"));
+		JsonObject mongoConfig = Config.getMongo(config);
+
+		if (config.containsKey(Config.MONGO_TABLE_PREFIX)) {
+			logger.info("initMongo() Set DB prefix to " + config.getString(Config.MONGO_TABLE_PREFIX));
+			DB.setPrefix(config.getString(Config.MONGO_TABLE_PREFIX));
 		}
+
 		client = MongoClient.createShared(vertx, mongoConfig);
 	}
 
@@ -278,17 +264,41 @@ public class MATC extends AbstractVerticle {
 	}
 	
 	private void initMail(Router router, JsonObject config){
+		logger.info("initMail() > enter");
 
-		if (config.containsKey("mail")){
-			mail = createMail(config.getJsonObject("mail"));
-			MailHandler.start(vertx, mail, config.getJsonObject("mail").getString("user"),
-					MailHandler.MAIl_BUS_QUANT_UX, MailHandler.MAIl_TEMPLATE_FOLDER_QUANT_UX);
+		JsonObject mailConfig = Config.getMail(config);
+		if (mailConfig.containsKey("user")){
+			mail = createMail(mailConfig);
+			MailHandler.start(
+				vertx,
+				mail,
+				mailConfig.getString("user"),
+				Config.getHttpHost(config)
+			);
 		}
 		
 		ContactRest contact = new ContactRest();
 		router.route(HttpMethod.POST, "/rest/contact").handler(contact::send);
 	}
 
+	private MailClient createMail(JsonObject config){
+
+		logger.info("createMail() > enter", config.getString("user"));
+
+		if(this.isDebug){
+			return new DebugMailClient();
+		} else{
+			MailConfig mailConfig = new MailConfig();
+			mailConfig.setHostname(config.getString("host"));
+			mailConfig.setPort(587);
+			mailConfig.setStarttls(StartTLSOptions.REQUIRED);
+			mailConfig.setUsername(config.getString("user"));
+			mailConfig.setPassword(config.getString("password"));
+			mailConfig.setStarttls(StartTLSOptions.OPTIONAL);
+			mailConfig.setKeepAlive(false);
+			return MailClient.createShared(vertx, mailConfig,config.getString("host"));
+		}
+	}
 
 	private void initBus(JsonObject config) {
 		
@@ -499,24 +509,7 @@ public class MATC extends AbstractVerticle {
 
 	}
 	
-	private MailClient createMail(JsonObject config){
-		
-		logger.info("createMail() > enter");
-	
-		if(this.isDebug){
-			return new DebugMailClient(config.getString("user"));
-		} else{
-			MailConfig mailConfig = new MailConfig();
-			mailConfig.setHostname(config.getString("host"));
-			mailConfig.setPort(587);
-			mailConfig.setStarttls(StartTLSOptions.REQUIRED);
-			mailConfig.setUsername(config.getString("user"));
-			mailConfig.setPassword(config.getString("password"));
-			mailConfig.setStarttls(StartTLSOptions.OPTIONAL);
-			mailConfig.setKeepAlive(false);
-			return MailClient.createShared(vertx, mailConfig,config.getString("host"));
-		}
-	}
+
 
 	@Override
 	public void stop(){

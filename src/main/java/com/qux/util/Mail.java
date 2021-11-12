@@ -113,14 +113,9 @@ public class Mail {
 	public void send(RoutingContext event){
 		EventBus bus = event.vertx().eventBus();
 		String app = event.request().getHeader("app");
-		logger.info("send() > " + app); 
-		if (app !=null && app.toLowerCase().contains("kyra")){
-			logger.info("send() > KYRA"); 
-			bus.send(MailHandler.MAIl_BUS_KYRA, msg);	
-		} else {
-			logger.info("send() > Quant-UX"); 
-			bus.send(MailHandler.MAIl_BUS_QUANT_UX, msg);	
-		}
+		logger.info("send() > " + app);
+		bus.send(MailHandler.MAIl_BUS_QUANT_UX, msg);
+
 	}
 	
 

@@ -1,6 +1,6 @@
 Hello,
 
-{{name}} send you an contact request:
+{{name}} send you a contact request:
 
 {{email}}
 
@@ -9,4 +9,4 @@ Hello,
 	
 Best Regards,
 
-Your Quant-UX Team
+Your Quant-UX
