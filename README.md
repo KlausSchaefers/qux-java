@@ -12,19 +12,19 @@ the passwords the same. If you keep the password blank, a random password is gen
 
 ```javascript
 {
-	"debug" : false,
-	"http.port" : 8080, // The server port
-	"http.host": "your.server.com" // The domain name of your server. This is important for the mail that will be send. Otherwise links will not work
-	"image.folder.user" : "test/user", // folder where user images will be stored
-	"image.folder.apps" : "test/apps", // folder where app images will be stored
-	"image.size" : 50000000, // max image size for uploads
-    "mongo.db_name": "MATC", // mongo DB to use
-    "mongo.connection_string": "mongodb://localhost:27017" // connection string, might include password and username
-	"mail.user": "", // POP user name for mail sending
-    "mail.password" : "", // password or token
-    "mail.host": "", // URL of mail server
-	"admin": "admin@quant-ux.com", // Internal mails will be send to this persons
-	"jwt.password": "test" // JWT password
+  "debug" : false,
+  "http.port" : 8080, // The server port
+  "http.host": "your.server.com" // The domain name of your server. This is important for the mail that will be send. Otherwise links will not work
+  "image.folder.user" : "test/user", // folder where user images will be stored
+  "image.folder.apps" : "test/apps", // folder where app images will be stored
+  "image.size" : 50000000, // max image size for uploads
+  "mongo.db_name": "MATC", // mongo DB to use
+  "mongo.connection_string": "mongodb://localhost:27017" // connection string, might include password and username
+  "mail.user": "", // POP user name for mail sending
+  "mail.password" : "", // password or token
+  "mail.host": "", // URL of mail server
+  "admin": "admin@quant-ux.com", // Internal mails will be send to this persons
+  "jwt.password": "test" // JWT password
 }
 ```
 
