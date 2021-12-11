@@ -20,6 +20,7 @@ public class ACLErrorLoggingTest extends MatcTestCase {
         log("test_error_mail", "enter");
 
         cleanUp();
+        DebugMailClient.getMails().clear();
 
         deploy(new MATC(), context);
 
