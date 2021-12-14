@@ -134,7 +134,7 @@ public class MatcTestCase {
 
 
 
-		System.out.println("\n\n\n--------------------------------\n\n");
+		System.out.println("\n\n\n endBefore() --------------------------------\n\n");
 	}
 
 	void delete(File f) {
