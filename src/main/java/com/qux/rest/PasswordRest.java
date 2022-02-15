@@ -1,5 +1,6 @@
 package com.qux.rest;
 
+import com.qux.auth.ITokenService;
 import com.qux.bus.MailHandler;
 import com.qux.model.AppEvent;
 import com.qux.model.User;
@@ -17,7 +18,7 @@ import de.vommond.lunarmare.Model;
 import de.vommond.lunarmare.ModelFactory;
 import com.qux.util.DB;
 import com.qux.util.Mail;
-import com.qux.util.REST;
+import com.qux.util.rest.REST;
 import com.qux.util.Util;
 
 public class PasswordRest extends REST{
@@ -31,7 +32,8 @@ public class PasswordRest extends REST{
 	private final Model resetRequest, setRequest;
 	
 	
-	public PasswordRest(MongoClient db) {
+	public PasswordRest(ITokenService tokenService, MongoClient db) {
+		super(tokenService);
 		this.db = db;	
 		
 		resetRequest = new ModelFactory().create("User")
@@ -95,20 +97,12 @@ public class PasswordRest extends REST{
 								if(write.succeeded()){
 									
 									logger.warn("resetPassword() > exit " + resetKey);
-									
-//									EventBus bus = event.vertx().eventBus();
-//									
+
 									JsonObject payload = new JsonObject()
 										.put("name", user.getString("name"))
 										.put("lastname", user.getString("lastname"))
 										.put("passwordRestKey", resetKey);
-									
-//									JsonObject msg = MailHandler.createMessage(
-//											user.getString("email"), 
-//											"Quant-UX.com - Password Reset", 
-//											MailHandler.TEMPLATE_PASSWORD_RESET, 
-//											payload);
-																	
+
 									Mail.to(user.getString("email"))
 										.subject("Password Reset")
 										.template(MailHandler.TEMPLATE_PASSWORD_RESET)

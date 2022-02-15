@@ -2,6 +2,7 @@ package com.qux.rest;
 
 import com.qux.acl.AppAcl;
 import com.qux.acl.InvitationACL;
+import com.qux.auth.ITokenService;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -32,7 +33,7 @@ import com.qux.model.Invitation;
 import com.qux.model.Mouse;
 import com.qux.model.TestSetting;
 import com.qux.util.DB;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 
 public class InvitationREST extends MongoREST{
 	
@@ -47,8 +48,8 @@ public class InvitationREST extends MongoREST{
 	private final String invDB;
 	
 
-	public InvitationREST(MongoClient db, String server, int port) {
-		super(db, Invitation.class);
+	public InvitationREST(ITokenService tokenService, MongoClient db, String server, int port) {
+		super(tokenService, db, Invitation.class);
 		setACL(new AppAcl(db));
 		this.invACL = new InvitationACL(db);
 		this.app_db = DB.getTable(App.class);

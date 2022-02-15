@@ -49,14 +49,12 @@ public class ImageRestTest extends MatcTestCase {
 		/**
 		 * do an upload
 		 */
-		postImage(klaus_app_public, context, "ps1.psd");
 		postImage(klaus_app_public, context, "test.png");
-		assertList("/rest/images/" + klaus_app_public.getId() + ".json", 2, context);
+		assertList("/rest/images/" + klaus_app_public.getId() + ".json", 1, context);
 
-		postImage(klaus_app_private, context, "ps1.psd");
 		postImage(klaus_app_private, context, "test.png");
 		postImage(klaus_app_private, context, "2000x4000_white.png");
-		assertList("/rest/images/" + klaus_app_private.getId() + ".json", 3, context);
+		assertList("/rest/images/" + klaus_app_private.getId() + ".json", 2, context);
 
 		/**
 		 * Login as Dennis, he cannot write, but read
@@ -64,7 +62,7 @@ public class ImageRestTest extends MatcTestCase {
 		assertLogin(context, dennis, "123456789");
 		postImageError(klaus_app_private, context);
 		postImageError(klaus_app_public, context);
-		JsonArray images = assertList("/rest/images/" + klaus_app_private.getId() + ".json", 3, context);
+		JsonArray images = assertList("/rest/images/" + klaus_app_private.getId() + ".json", 2, context);
 		
 		assertRaw(context, klaus_app_private, images);
 
@@ -84,7 +82,7 @@ public class ImageRestTest extends MatcTestCase {
 		/**
 		 * Examples can be loaded
 		 */
-		JsonArray publicImages = assertList("/rest/images/" + klaus_app_public.getId() + ".json", 2, context);
+		JsonArray publicImages = assertList("/rest/images/" + klaus_app_public.getId() + ".json", 1, context);
 		assertRaw(context, klaus_app_public, publicImages);
 
 		

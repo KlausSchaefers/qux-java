@@ -1,6 +1,6 @@
 package com.qux;
 
-import com.qux.util.MongoQuery;
+import com.qux.util.rest.MongoQuery;
 import org.junit.Test;
 
 public class MongyQueryTest {

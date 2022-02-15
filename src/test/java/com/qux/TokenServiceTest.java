@@ -1,7 +1,7 @@
 package com.qux;
 
 import com.qux.model.User;
-import com.qux.util.TokenService;
+import com.qux.auth.QUXTokenService;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,16 +12,17 @@ public class TokenServiceTest {
 	@Test
 	public void test(){
 		System.out.println("TokenServiceTest.test() > enter");
-		
-		TokenService.setSecret("123");
+		QUXTokenService ts = new QUXTokenService();
+
+		ts.setSecret("123");
 		
 		JsonObject json = new JsonObject().put("_id", "id1").put("email", "klaus@quant-ux.de");
-		String token = TokenService.getToken(json);
+		String token = ts.getToken(json);
 		
 		Assert.assertNotNull(token);
 
 		
-		User user = TokenService.getUser(token);
+		User user = ts.getUser(token);
 		Assert.assertNotNull(user);
 		Assert.assertEquals("id1", user.getId());
 		Assert.assertEquals("klaus@quant-ux.de", user.getEmail());
@@ -32,18 +33,19 @@ public class TokenServiceTest {
 	@Test
 	public void test_user(){
 		System.out.println("TokenServiceTest.test_user() > enter");
-		
-		TokenService.setSecret("123");
+
+		QUXTokenService ts = new QUXTokenService();
+		ts.setSecret("123");
 		
 		JsonObject json = new JsonObject()
 				.put("_id", "id1")
 				.put("email", "klaus@quant-ux.de")
 				.put("role", User.USER);
-		String token = TokenService.getToken(json);
+		String token = ts.getToken(json);
 		
 		Assert.assertNotNull(token);
 
-		User user = TokenService.getUser(token);
+		User user = ts.getUser(token);
 		Assert.assertNotNull(user);
 		Assert.assertEquals("id1", user.getId());
 		Assert.assertEquals("klaus@quant-ux.de", user.getEmail());
@@ -54,20 +56,21 @@ public class TokenServiceTest {
 	@Test
 	public void test_wrong_secret(){
 		System.out.println("TokenServiceTest.test_wrong_secret() > enter");
-		
-		TokenService.setSecret("123");
+
+		QUXTokenService ts = new QUXTokenService();
+		ts.setSecret("123");
 		
 		JsonObject json = new JsonObject()
 				.put("_id", "id1")
 				.put("email", "klaus@quant-ux.de")
 				.put("role", User.USER);
-		String token = TokenService.getToken(json);
+		String token = ts.getToken(json);
 		
 		Assert.assertNotNull(token);
 		
-		TokenService.setSecret("abc");
+		ts.setSecret("abc");
 		
-		User user = TokenService.getUser(token);
+		User user = ts.getUser(token);
 		
 		Assert.assertNull(user);
 	
@@ -76,18 +79,19 @@ public class TokenServiceTest {
 	@Test
 	public void test_expired(){
 		System.out.println("TokenServiceTest.test_wrong_secret() > enter");
-		
-		TokenService.setSecret("123");
+
+		QUXTokenService ts = new QUXTokenService();
+		ts.setSecret("123");
 		
 		JsonObject json = new JsonObject()
 				.put("_id", "id1")
 				.put("email", "klaus@quant-ux.de")
 				.put("role", User.USER);
-		String token = TokenService.getToken(json, -2);
+		String token = ts.getToken(json, -2);
 		
 		Assert.assertNotNull(token);
 		
-		User user = TokenService.getUser(token);
+		User user = ts.getUser(token);
 		
 		Assert.assertNull(user);
 	}
@@ -96,26 +100,27 @@ public class TokenServiceTest {
 	public void test_getExpiredAt(){
 		System.out.println("TokenServiceTest.test_getExpiredAt() > enter");
 
-		TokenService.setSecret("123");
+		QUXTokenService ts = new QUXTokenService();
+		ts.setSecret("123");
 
 		JsonObject json = new JsonObject()
 				.put("_id", "id1")
 				.put("email", "klaus@quant-ux.de")
 				.put("role", User.USER);
-		String token = TokenService.getToken(json);
+		String token = ts.getToken(json);
 
 		Assert.assertNotNull(token);
 
 		// ste other secret
-		TokenService.setSecret("");
+		ts.setSecret("");
 
-		String expiresAt = TokenService.getExpiresAt(token);
+		String expiresAt = ts.getExpiresAt(token);
 		Assert.assertNotNull(expiresAt);
 
-		expiresAt = TokenService.getExpiresAt("");
+		expiresAt = ts.getExpiresAt("");
 		Assert.assertEquals("-", expiresAt);
 
-		expiresAt = TokenService.getExpiresAt("No token");
+		expiresAt = ts.getExpiresAt("No token");
 		Assert.assertEquals("-", expiresAt);
 
 		System.out.println("TokenServiceTest.test_getExpiredAt() > exit "+ expiresAt);

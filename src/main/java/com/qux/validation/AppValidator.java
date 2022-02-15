@@ -6,7 +6,7 @@ import java.util.List;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 
 public class AppValidator extends MongValidator implements Validator{
 

@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 
 import com.qux.MATC;
 import com.qux.acl.InvitationACL;
+import com.qux.auth.ITokenService;
 import com.qux.model.Image;
 import com.qux.model.Model;
 import com.qux.model.User;
@@ -21,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.qux.util.DB;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import com.qux.util.Util;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -50,8 +51,8 @@ public class ImageREST extends MongoREST {
 	private final Set<String> supportedTypes;
 	
 		
-	public ImageREST(MongoClient mongo, String folder, JsonObject conf) {
-		super(mongo, Image.class);
+	public ImageREST(ITokenService tokenService, MongoClient mongo, String folder, JsonObject conf) {
+		super(tokenService, mongo, Image.class);
 		this.imageSize = conf.getLong("image.size");
 		this.imageFolder = folder;
 		this.invACL = new InvitationACL(mongo);

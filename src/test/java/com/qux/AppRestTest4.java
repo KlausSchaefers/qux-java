@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 import com.qux.model.App;
 import com.qux.model.Image;
 import com.qux.model.User;
-import com.qux.util.MongoUtil;
+import com.qux.util.rest.MongoUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

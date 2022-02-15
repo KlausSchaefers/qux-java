@@ -3,9 +3,10 @@ package com.qux.rest;
 import java.util.List;
 
 import com.qux.acl.AppEventACL;
+import com.qux.auth.ITokenService;
 import com.qux.model.AppEvent;
 import com.qux.model.Model;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.RoutingContext;
@@ -13,8 +14,8 @@ import io.vertx.ext.web.RoutingContext;
 public class AppEventRest extends MongoREST {
 	
 	
-	public AppEventRest(MongoClient db) {
-		super(db,  AppEvent.class);
+	public AppEventRest(ITokenService tokenService, MongoClient db) {
+		super(tokenService, db,  AppEvent.class);
 		setACL(new AppEventACL());
 	}
 	

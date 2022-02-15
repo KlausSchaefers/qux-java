@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.qux</groupId>
 	<artifactId>server</artifactId>
-	<version>3.2.0</version>
+	<version>4.0.50</version>
 
 	<properties>
 		<vertx.version>3.9.11</vertx.version>
@@ -155,12 +155,6 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>com.twelvemonkeys.imageio</groupId>
-			<artifactId>imageio-psd</artifactId>
-			<version>3.2.1</version> <!-- Alternatively, build your own version -->
-		</dependency>
-
 		<!--  add last so jackson dependecy is not used. Otherwise we have some weired  -->
 		<dependency>
 		    <groupId>com.auth0</groupId>
@@ -212,7 +206,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<manifestEntries>
+									<manifestEntries>x
 										<Main-Class>io.vertx.core.Starter</Main-Class>
 										<Main-Verticle>com.qux.MATC</Main-Verticle>
 									</manifestEntries>

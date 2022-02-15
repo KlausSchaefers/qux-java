@@ -1,9 +1,10 @@
-package com.qux.util;
+package com.qux.mocks;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import com.qux.model.Model;
+import com.qux.util.JSONMapper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;

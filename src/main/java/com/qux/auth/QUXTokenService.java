@@ -1,4 +1,4 @@
-package com.qux.util;
+package com.qux.auth;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -18,36 +18,37 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-public class TokenService {
+public class QUXTokenService implements ITokenService{
 	
-	private static Logger logger = LoggerFactory.getLogger(TokenService.class);
+	private static Logger logger = LoggerFactory.getLogger(QUXTokenService.class);
 
-	private static String secret = null;
-	
-	private static int daysToExpire = 7;
-	
 	private static final String ISSUER = "MATC";
-	
+
 	private static final String CLAIM_ID = "id";
-	
+
 	private static final String CLAIM_EMAIL = "email";
-	
+
 	private static final String CLAIM_NAME = "name";
-	
+
 	private static final String CLAIM_LASTNAME = "lastname";
-	
+
 	private static final String CLAIM_ROLE = "role";
+
+	private String secret = null;
 	
+	private int daysToExpire = 7;
+	
+
 			
-	public static void setSecret(String secret) {
-		TokenService.secret = secret;
+	public void setSecret(String secret) {
+		this.secret = secret;
 	}
 	
-	public static String getToken (JsonObject user) {
+	public String getToken (JsonObject user) {
 		return getToken(user, daysToExpire);
 	}
 	
-	public static String getToken (JsonObject user, int days) {
+	public String getToken (JsonObject user, int days) {
 		
 		if (secret == null) {
 			logger.error("getToken() > No secret");
@@ -57,7 +58,7 @@ public class TokenService {
 		try {
 			Date ttl = getTTL(days);
 			
-		    Algorithm algorithm = Algorithm.HMAC256(TokenService.secret);
+		    Algorithm algorithm = Algorithm.HMAC256(this.secret);
 		    String token = JWT.create()
 		        .withIssuer(ISSUER)
 		        .withClaim(CLAIM_ID, user.getString("_id"))
@@ -74,13 +75,13 @@ public class TokenService {
 		return "SomeError";
 	}
 
-	public static Date getTTL(int days) {
+	public Date getTTL(int days) {
 		LocalDateTime plus7Days = LocalDateTime.now().plusDays(days);
 		Date ttl = Date.from(plus7Days.atZone(ZoneId.systemDefault()).toInstant());
 		return ttl;
 	}
 
-	public static String getExpiresAt(RoutingContext event) {
+	public String getExpiresAt(RoutingContext event) {
 		String token = event.request().getHeader("Authorization");
 		if (token != null && token.length() > 10) {
 			token = token.substring(7);
@@ -94,7 +95,7 @@ public class TokenService {
 	}
 
 
-	public static String getExpiresAt (String token) {
+	public String getExpiresAt (String token) {
 		if (token != null) {
 			try {
 				DecodedJWT jwt = JWT.decode(token);
@@ -106,7 +107,7 @@ public class TokenService {
 		return "-";
 	}
 
-	public static User getUser(String token) {
+	public User getUser(String token) {
 
 		if (secret == null) {
 			logger.error("getUser() > No secret");
@@ -137,7 +138,7 @@ public class TokenService {
 		return null;
 	}
 
-	public static User getUser(RoutingContext event) {
+	public User getUser(RoutingContext event) {
 		String token = event.request().getHeader("Authorization");
 		if (token != null && token.length() > 10) {
 			token = token.substring(7);
@@ -147,7 +148,6 @@ public class TokenService {
 		if (queryToken != null && !queryToken.isEmpty()) {
 			return getUser(queryToken);
 		}
-
 		return null;
 	}
 

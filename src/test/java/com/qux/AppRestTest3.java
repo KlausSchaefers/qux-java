@@ -2,7 +2,7 @@ package com.qux;
 
 import com.qux.model.App;
 import com.qux.util.JsonPath;
-import com.qux.util.MongoUtil;
+import com.qux.util.rest.MongoUtil;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;

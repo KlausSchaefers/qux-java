@@ -1,6 +1,8 @@
-package com.qux.util;
+package com.qux.util.rest;
 
+import com.qux.auth.ITokenService;
 import com.qux.model.User;
+import com.qux.util.JSONMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -26,6 +28,13 @@ public abstract class REST {
 	private Logger logger = LoggerFactory.getLogger(REST.class);
 	
 	private String idParameter = "id";
+
+	private final ITokenService tokenService;
+
+	public REST (ITokenService tokenService) {
+		this.tokenService = tokenService;
+	}
+
 
 	public void setIdParameter(String id) {
 		this.idParameter = id;
@@ -57,7 +66,7 @@ public abstract class REST {
 			/**
 			 * First check if we have a JWT user (since 2.2.5)
 			 */
-			User tokenUser = TokenService.getUser(event);
+			User tokenUser = this.tokenService.getUser(event);
 			if (tokenUser != null) {
 				logger.debug("Rest.getUser() > found JWT user");
 				return tokenUser;
@@ -73,17 +82,14 @@ public abstract class REST {
 		 */
 		return User.GUEST_USER;
 	}
-	
-	protected void setUser(User user, RoutingContext event){
-		log("setUser", "enter > " + user);
-	}
-	
 
-	
+	protected ITokenService getTokenService() {
+		return tokenService;
+	}
+
 	protected void returnError(RoutingContext event, int code) {
 		event.response().setStatusCode(code);
 		event.response().end();
-		
 	}
 
 	protected void returnJson(RoutingContext event, JsonObject result){

@@ -1,9 +1,11 @@
-package com.qux.util;
+package com.qux.util.rest;
 
+import com.qux.auth.ITokenService;
 import com.qux.model.Metric;
 import com.qux.model.Model;
 import com.qux.model.Team;
 import com.qux.model.User;
+import com.qux.util.DB;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -37,9 +39,10 @@ public class MongoREST extends CrudREST {
 	
 	private boolean isBatch = false;
 
-	public MongoREST(MongoClient db, Class<?> cls) {
+	public MongoREST(ITokenService tokenService, MongoClient db, Class<?> cls) {
+		super(tokenService);
 		this.mongo = db;
-		this.table = DB.getTable(cls);	
+		this.table = DB.getTable(cls);
 		this.logger  =LoggerFactory.getLogger(getClass());
 		this.metricTable = DB.getTable(Metric.class);
 		this.team_db = DB.getTable(Team.class);

@@ -3,6 +3,7 @@ package com.qux.rest;
 import com.qux.acl.Acl;
 import com.qux.acl.CommentAcl;
 import com.qux.acl.RoleACL;
+import com.qux.auth.ITokenService;
 import com.qux.model.Comment;
 import com.qux.model.Model;
 import com.qux.model.User;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.qux.util.DB;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import com.qux.validation.PojoValidator;
 
 public class CommentREST extends MongoREST{
@@ -27,13 +28,13 @@ public class CommentREST extends MongoREST{
 	
 	private final Set<String> exludedKeys = new HashSet<String>();
 	
-	public CommentREST(MongoClient db) {
-		this(db, new RoleACL( new CommentAcl(db)).read(User.GUEST));
+	public CommentREST(ITokenService tokenService, MongoClient db) {
+		this(tokenService, db, new RoleACL( new CommentAcl(db)).read(User.GUEST));
 	}
 	
 	
-	public CommentREST(MongoClient db, Acl acl) {
-		super(db, Comment.class);
+	public CommentREST(ITokenService tokenService, MongoClient db, Acl acl) {
+		super(tokenService, db, Comment.class);
 		
 		/**
 		 * use simple pojo validation

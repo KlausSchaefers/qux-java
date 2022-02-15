@@ -2,6 +2,7 @@ package com.qux.rest;
 
 import com.qux.acl.Acl;
 import com.qux.acl.AppAcl;
+import com.qux.auth.ITokenService;
 import com.qux.bus.MailHandler;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -22,7 +23,7 @@ import com.qux.model.Team;
 import com.qux.model.User;
 import com.qux.util.DB;
 import com.qux.util.Mail;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 
 public class TeamREST extends MongoREST {
 	
@@ -30,8 +31,8 @@ public class TeamREST extends MongoREST {
 
 	private final String user_db, team_db, app_db;
 	
-	public TeamREST(MongoClient db) {
-		super(db, App.class);
+	public TeamREST(ITokenService tokenService, MongoClient db) {
+		super(tokenService, db, App.class);
 		this.acl = new AppAcl(db);
 		this.user_db = DB.getTable(User.class);
 		this.team_db = DB.getTable(Team.class);

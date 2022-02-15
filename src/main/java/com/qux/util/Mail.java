@@ -22,14 +22,13 @@ public class Mail {
 	public static void error(RoutingContext event, String message){
 		
 		try{
-			String expiredAt = TokenService.getExpiresAt(event);
 
 			JsonObject json = new JsonObject()
 					.put("url", event.request().path())
 					.put("user", "")
 					.put("platform", "Vertx")
 					.put("ua", "-")
-					.put("token", expiredAt)
+					.put("token", "?")
 					.put("queue", "-")
 					.put("stack", "-")
 					.put("message", message)

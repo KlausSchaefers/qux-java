@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.qux.acl.Acl;
 import com.qux.acl.LibraryAcl;
+import com.qux.auth.ITokenService;
 import com.qux.model.App;
 import com.qux.model.AppEvent;
 import com.qux.model.Library;
@@ -11,7 +12,7 @@ import com.qux.model.LibraryTeam;
 import com.qux.model.Model;
 import com.qux.util.DB;
 import com.qux.util.Mail;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -24,8 +25,8 @@ public class LibraryRest extends MongoREST{
 	
 	private final String library_team_db;
 
-	public LibraryRest(MongoClient db) {
-		super(db, Library.class);
+	public LibraryRest(ITokenService tokenService, MongoClient db) {
+		super(tokenService, db, Library.class);
 		this.setACL(new LibraryAcl(db));
 		this.setPartialUpdate(false);
 		this.setIdParameter("libID");

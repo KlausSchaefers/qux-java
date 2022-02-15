@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.qux.MATC;
 import com.qux.acl.UserAcl;
+import com.qux.auth.ITokenService;
 import com.qux.bus.MailHandler;
 import com.qux.model.AppEvent;
 import com.qux.model.Team;
@@ -15,8 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.qux.util.DB;
 import com.qux.util.Mail;
-import com.qux.util.MongoREST;
-import com.qux.util.TokenService;
+import com.qux.util.rest.MongoREST;
+import com.qux.auth.QUXTokenService;
 import com.qux.util.Util;
 import com.qux.validation.UserValidator;
 import io.vertx.core.Handler;
@@ -34,10 +35,10 @@ public class UserREST extends MongoREST {
 
 	private long imageSize = 1024 * 1024;
 	
-	private Logger logger = LoggerFactory.getLogger(UserREST.class);
+	private final Logger logger = LoggerFactory.getLogger(UserREST.class);
 
-	public UserREST(MongoClient db, JsonObject conf) {
-		super(db, User.class);
+	public UserREST(ITokenService tokenService, MongoClient db, JsonObject conf) {
+		super(tokenService, db, User.class);
 		this.imageFolder = conf.getString("image.folder.user");
 		this.imageSize = conf.getLong("image.size");
 		this.team_db = DB.getTable(Team.class);
@@ -138,7 +139,7 @@ public class UserREST extends MongoREST {
 		/**
 		 * Every thing fine. We can set the user in the session
 		 */
-		setUser(mapper.fromVertx(user, User.class), event );
+		//setUser(mapper.fromVertx(user, User.class), event );
 		
 		/**
 		 * We update user data...
@@ -161,9 +162,11 @@ public class UserREST extends MongoREST {
 		 * Log for KPI
 		 */
 		AppEvent.send(event, user.getString("email"), AppEvent.TYPE_USER_LOGIN);
-		
-		
-		String token = TokenService.getToken(user);
+
+		/**
+		 * Create a new token and set in the response
+		 */
+		String token = this.getTokenService().getToken(user);
 		user.put("token", token);
 		
 		/**
@@ -342,7 +345,7 @@ public class UserREST extends MongoREST {
 	
 	protected void afterUpdate(RoutingContext event, String id, JsonObject json) {
 	
-		setUser(mapper.fromVertx(json, User.class), event );
+		//setUser(mapper.fromVertx(json, User.class), event );
 	}
 
 	
@@ -458,7 +461,6 @@ public class UserREST extends MongoREST {
 		 */
 		User user = getUser(event);
 		user.setImage(image);
-		setUser(user, event);
 		
 		/**
 		 * build a new user json and pass it to the update method,
@@ -466,8 +468,6 @@ public class UserREST extends MongoREST {
 		 */
 		JsonObject json = new JsonObject().put("image", image );
 		update(event, id, json );
-		
-		
 	}
 
 	private boolean checkImage(FileUpload file) {
@@ -500,9 +500,7 @@ public class UserREST extends MongoREST {
 							
 							User user =getUser(event);
 							user.setImage(null);
-							setUser(user, event);
-							
-							
+
 							JsonObject json = res.result();
 							json.remove("image");
 							
@@ -525,7 +523,6 @@ public class UserREST extends MongoREST {
 							 */
 							String file = imageFolder  +"/" + id + "/" + image ;
 							FileSystem fs = event.vertx().fileSystem();
-							System.out.println("Delete user image "+ file);
 							fs.exists(file, exists->{
 								if(exists.succeeded() && exists.result()){
 									fs.delete(file, deleted ->{
@@ -662,7 +659,7 @@ public class UserREST extends MongoREST {
 		}
 	}
 	
-	public void getNotifcationView(RoutingContext event){
+	public void getNotificationView(RoutingContext event){
 		User user = this.getUser(event);
 		logger.debug("updateNotificationView() > enter > " + user); 
 		if (!user.isGuest()){

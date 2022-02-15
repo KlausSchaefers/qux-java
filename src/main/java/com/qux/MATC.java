@@ -2,15 +2,15 @@ package com.qux;
 
 import java.time.LocalDateTime;
 
+import com.qux.auth.ITokenService;
 import com.qux.util.Config;
 import com.qux.util.DB;
 import com.qux.util.DebugMailClient;
-import com.qux.util.TokenService;
+import com.qux.auth.QUXTokenService;
 import com.qux.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.qux.acl.AppAcl;
-import com.qux.acl.ExamplesAcl;
 import com.qux.acl.InvitationCommentACL;
 import com.qux.bus.ImageVerticle;
 import com.qux.bus.MailHandler;
@@ -58,7 +58,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "3.0.4";
+	public static final String VERSION = "4.0.50";
 
 	public static final String BUS_IMAGES_UPLOADED = "images.uploaded";
 
@@ -75,6 +75,8 @@ public class MATC extends AbstractVerticle {
 	private String startedTime = LocalDateTime.now().toString();
 
 	public static String ADMIN = "admin@quant-ux.com";
+
+	private ITokenService tokenService;
 	
 	@Override
 	public void start() {
@@ -83,17 +85,8 @@ public class MATC extends AbstractVerticle {
 		/**
 		 * Load config
 		 */
-		JsonObject config = this.getConfig();
-		if(config.containsKey("debug")){
-			this.isDebug = config.getBoolean("debug");
-			this.logger.info("start() > isDebug : " + this.isDebug);
-		}
+		JsonObject config = initConfig();
 
-		if (config.containsKey("admin")) {
-            this.logger.info("start() > set admin");
-		    ADMIN = config.getString("admin");
-        }
-		
 		/**
 		 * Create MongoDB client
 		 */
@@ -127,13 +120,10 @@ public class MATC extends AbstractVerticle {
 		initInvitationRest(router, config);
 		initAnnotationRest(router, config);
 		initTestRest(router);
-		initTemplate(router,config);
 		initNotification(router,config);
 		initLibrary(router, config);
 		initBus(config);
 
-
-		
 		/**
 		 * Launch server
 		 */
@@ -150,123 +140,96 @@ public class MATC extends AbstractVerticle {
 		logger.error("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
 		logger.error("******************************");
 	}
-	
+
 	private JsonObject getConfig() {
 		logger.info("getConfig() > Enter");
 		JsonObject config = this.config();
 		JsonObject defaultConfig = Config.setDefaults(config);
-		JsonObject mergedConfig = Config.mergeEncIntoConfig(defaultConfig);
+		JsonObject mergedConfig = Config.mergeEnvIntoConfig(defaultConfig);
 		return mergedConfig;
 	}
 
+	private JsonObject initConfig() {
+		JsonObject config = this.getConfig();
+		if(config.containsKey("debug")){
+			this.isDebug = config.getBoolean("debug");
+			this.logger.info("start() > isDebug : " + this.isDebug);
+		}
 
+		if (config.containsKey("admin")) {
+			this.logger.info("start() > set admin");
+			ADMIN = config.getString("admin");
+		}
+		return config;
+	}
 
 	private void initStatus(JsonObject config, Router router) {
 		router.route(HttpMethod.GET, "/rest/status.json").handler(event -> {
-			
 			event.response().end(new JsonObject()
 					.put("started", startedTime)
 					.put("version", VERSION)
 					.encodePrettily());
 		});
-		
-		
 	}
 
 	private void initLibrary(Router router, JsonObject config) {
 		
-		LibraryRest libs = new LibraryRest(client);
+		LibraryRest libs = new LibraryRest(this.tokenService, client);
 		router.route(HttpMethod.GET, "/rest/libs").handler(libs.findByUser());
 		router.route(HttpMethod.POST, "/rest/libs").handler(libs.create());
 		router.route(HttpMethod.GET, "/rest/libs/:libID.json").handler(libs.find());
 		router.route(HttpMethod.POST, "/rest/libs/:libID.json").handler(libs.update());
-		
-		
-		LibraryTeamRest libTeams = new LibraryTeamRest(client);
-		
+
+		LibraryTeamRest libTeams = new LibraryTeamRest(this.tokenService, client);
 		router.route(HttpMethod.GET, "/rest/libs/:libID/team.json").handler(libTeams.getTeam());
 		router.route(HttpMethod.GET, "/rest/libs/:libID/suggestions/team.json").handler(libTeams.getSuggestion());
 		router.route(HttpMethod.POST, "/rest/libs/:libID/team/").handler(libTeams.createPermission());
 		router.route(HttpMethod.POST, "/rest/libs/:libID/team/:userID.json").handler(libTeams.updatePermission());
 		router.route(HttpMethod.DELETE, "/rest/libs/:libID/team/:userID.json").handler(libTeams.removePermission());
-
 	}
 
 
 	public void initTokenService (JsonObject config) {
+
+		/**
+		 * Check here which token service to use
+		 */
+		if (Config.isKeyCloak(config)) {
+			throw new RuntimeException("KeyCloak not supported");
+		} else {
+			initQUXTokenService(config);
+		}
+
+	}
+
+	private void initQUXTokenService(JsonObject config) {
+		QUXTokenService tokenService = new QUXTokenService();
 		if (config.containsKey(Config.JWT_PASSWORD)){
 			String password = config.getString(Config.JWT_PASSWORD);
-			TokenService.setSecret(password);
+			tokenService.setSecret(password);
 		} else {
-			TokenService.setSecret(Util.getRandomString());
-			logger.error("initTokenService() > No key. Use random!"); 
+			tokenService.setSecret(Util.getRandomString());
+			logger.error("initTokenService() > No key. Use random!");
 		}
-		
+		this.tokenService = tokenService;
 	}
 
 
 	private void initNotification(Router router, JsonObject config) {
-		NotificationREST rest = new NotificationREST(client);
+		NotificationREST rest = new NotificationREST(this.tokenService, client);
 		router.route(HttpMethod.GET, "/rest/notifications.json").handler(rest::findByUser);
 	}
 
-	private void initExamples(Router router, JsonObject config) {
-		logger.info("initExamples() > enter");
-		
-		AppREST app = new AppREST(client, config.getString("image.folder.apps"));
-		app.setACL(new ExamplesAcl(client));
-		router.route(HttpMethod.GET, "/examples/apps/:appID.json").handler(app.find());
-		
-		CommandStackREST commandStack = new CommandStackREST(client);
-		commandStack.setACL(new ExamplesAcl(client));
-		router.route(HttpMethod.GET, "/examples/commands/:appID.json").handler(commandStack.findOrCreateByApp());
-	
-		
-		AppPartREST<Annotation> rest = new AppPartREST<Annotation>(client, Annotation.class, "annotationID");
-		rest.setACL(new ExamplesAcl(client));
-		
-		router.route(HttpMethod.GET, "/examples/annotations/apps/:appID/all.json").handler(rest.findBy());
-		router.route(HttpMethod.GET, "/examples/annotations/apps/:appID/:type.json").handler(rest.findBy());
-		router.route(HttpMethod.GET, "/examples/annotations/apps/:appID/:reference/:type.json").handler(rest.findBy());
-		
-		
-		EventRest event = new EventRest(client);
-		event.setACL(new ExamplesAcl(client));
-		router.route(HttpMethod.GET, "/examples/events/:appID.json").handler(event.findBy());
-		router.route(HttpMethod.GET, "/examples/events/:appID/:session.json").handler(event.findBy());
-
-		MouseRest mouse = new MouseRest(client);
-		mouse.setACL(new ExamplesAcl(client));
-		router.route(HttpMethod.GET, "/examples/mouse/:appID.json").handler(mouse.findBy());
-		router.route(HttpMethod.GET, "/examples/mouse/:appID/:session.json").handler(mouse.findBy());
-
-		
-		TestSettingsRest test = new TestSettingsRest(client, TestSetting.class, "testID");
-		test.setACL(new ExamplesAcl(client));
-		router.route(HttpMethod.GET, "/examples/test/:appID.json").handler(test.findOrCreateByApp());
-	
-	
-		
-	}
-
-
-
 	private void initMongo(JsonObject config) {
 		JsonObject mongoConfig = Config.getMongo(config);
-
 		if (config.containsKey(Config.MONGO_TABLE_PREFIX)) {
 			logger.info("initMongo() Set DB prefix to " + config.getString(Config.MONGO_TABLE_PREFIX));
 			DB.setPrefix(config.getString(Config.MONGO_TABLE_PREFIX));
 		}
-
 		client = MongoClient.createShared(vertx, mongoConfig);
 	}
 
-	private void initTemplate(Router router, JsonObject config) {
-		TemplateRest templates = new TemplateRest(config.getBoolean("debug"));
-		router.route(HttpMethod.GET, "/rest/themes/core.js").handler(templates.get());
-	}
-	
+
 	private void initMail(Router router, JsonObject config){
 		logger.info("initMail() > enter");
 
@@ -319,7 +282,7 @@ public class MATC extends AbstractVerticle {
 	
 	private void initCommandRest(Router router) {
 		
-		CommandStackREST commandStack = new CommandStackREST(client);
+		CommandStackREST commandStack = new CommandStackREST(this.tokenService, client);
 		/**
 		 * complete getters and setters
 		 */
@@ -338,7 +301,7 @@ public class MATC extends AbstractVerticle {
 	
 	private void initTestRest(Router router) {
 		
-		TestSettingsRest rest = new TestSettingsRest(client, TestSetting.class, "testID");
+		TestSettingsRest rest = new TestSettingsRest(this.tokenService, client, TestSetting.class, "testID");
 		router.route(HttpMethod.GET, "/rest/test/:appID.json").handler(rest.findOrCreateByApp());
 		router.route(HttpMethod.POST, "/rest/test/:appID.json").handler(rest.updateByApp());
 	}
@@ -346,7 +309,7 @@ public class MATC extends AbstractVerticle {
 	
 	private void initAnnotationRest(Router router, JsonObject config) {
 		
-		AppPartREST<Annotation> rest = new AppPartREST<Annotation>(client, Annotation.class, "annotationID");
+		AppPartREST<Annotation> rest = new AppPartREST<Annotation>(this.tokenService, client, Annotation.class, "annotationID");
 		
 		router.route(HttpMethod.GET, "/rest/annotations/apps/:appID/all.json").handler(rest.findBy());
 		router.route(HttpMethod.GET, "/rest/annotations/apps/:appID/:type.json").handler(rest.findBy());
@@ -360,7 +323,7 @@ public class MATC extends AbstractVerticle {
 	
 	private void initEventRest(Router router) {
 		
-		EventRest event = new EventRest(client);
+		EventRest event = new EventRest(this.tokenService, client);
 		event.setBatch(true);
 		router.route(HttpMethod.POST, "/rest/events/:appID.json").handler(event.create());
 		router.route(HttpMethod.GET, "/rest/events/:appID.json").handler(event.findBy());
@@ -368,7 +331,7 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.GET, "/rest/events/:appID/all/count.json").handler(event.countBy());
 		router.route(HttpMethod.DELETE, "/rest/events/:appID/:session.json").handler(event.deleteBy());
 			
-		MouseRest mouse = new MouseRest(client);
+		MouseRest mouse = new MouseRest(this.tokenService, client);
 		mouse.setBatch(true);
 		router.route(HttpMethod.POST, "/rest/mouse/:appID.json").handler(mouse.create());
 		router.route(HttpMethod.GET, "/rest/mouse/:appID.json").handler(mouse.findBy());
@@ -379,17 +342,14 @@ public class MATC extends AbstractVerticle {
 	
 	private void initInvitationRest(Router router, JsonObject config) {
 		
-		InvitationREST invitation = new InvitationREST(client, 
+		InvitationREST invitation = new InvitationREST(this.tokenService,client,
 				config.getString("http.server"), 
 				config.getInteger("http.port"));
 		
 		router.route(HttpMethod.GET, "/rest/invitation/:appID.json").handler(invitation.findByApp());
 		router.route(HttpMethod.GET, "/rest/invitation/:appID/test.jpg").handler(invitation.getTestQR());
 		router.route(HttpMethod.GET, "/rest/invitation/:appID/debug.jpg").handler(invitation.getDebugQR());
-	
-		
-		
-		
+
 		router.route(HttpMethod.GET, "/rest/invitation/hash/:hash/test.jpg").handler(invitation.getTestQRByHash());
 		router.route(HttpMethod.GET, "/rest/invitation/hash/:hash/debug.jpg").handler(invitation.getDebugQRByHash());
 		
@@ -403,7 +363,7 @@ public class MATC extends AbstractVerticle {
 	
 
 	private void initCommentRest(Router router) {
-		CommentREST comment = new CommentREST(client);
+		CommentREST comment = new CommentREST(this.tokenService, client);
 	
 	
 		router.route(HttpMethod.GET, "/rest/comments/apps/:appID.json").handler(comment.findBy());
@@ -420,7 +380,7 @@ public class MATC extends AbstractVerticle {
 			
 		
 		
-		CommentREST invitationComment = new CommentREST(client,new InvitationCommentACL(client))
+		CommentREST invitationComment = new CommentREST(this.tokenService, client,new InvitationCommentACL(client))
 			.exlcudeUrlParameter("hash");		
 		
 		router.route(HttpMethod.GET, "/rest/comments/hash/:hash/:appID.json").handler(invitationComment.findBy());
@@ -440,7 +400,7 @@ public class MATC extends AbstractVerticle {
 	
 	private void initTeamRest(Router router){
 	
-		TeamREST team = new TeamREST(client);
+		TeamREST team = new TeamREST(this.tokenService, client);
 	
 		router.route(HttpMethod.GET, "/rest/apps/:appID/team.json").handler(team.getTeam());
 		router.route(HttpMethod.GET, "/rest/apps/:appID/suggestions/team.json").handler(team.getSuggestion());
@@ -453,14 +413,12 @@ public class MATC extends AbstractVerticle {
 	private void initAppRest(Router router, JsonObject config) {
 		
 		
-		AppREST app = new AppREST(client, config.getString("image.folder.apps"));
+		AppREST app = new AppREST(this.tokenService, client, config.getString("image.folder.apps"));
 		router.route(HttpMethod.GET, "/rest/apps").handler(app.findByUser());
 		router.route(HttpMethod.GET, "/rest/apps/public").handler(app.findPublic());
-		router.route(HttpMethod.GET, "/rest/apps/kyra").handler(app.findNotPaid());
 		router.route(HttpMethod.POST, "/rest/apps").handler(app.create());
 		router.route(HttpMethod.GET, "/rest/apps/:appID.json").handler(app.find());
 		router.route(HttpMethod.GET, "/rest/apps/embedded/:appID.json").handler(app.findEmbedded());
-		//router.route(HttpMethod.GET, "/rest/apps/preview/:appID.json").handler(app.findFiltered("id", "name", "description"));
 		router.route(HttpMethod.POST, "/rest/apps/props/:appID.json").handler(app.update());
 		router.route(HttpMethod.POST, "/rest/apps/:appID.json").handler(app.update());
 		router.route(HttpMethod.DELETE, "/rest/apps/:appID.json").handler(app.delete());
@@ -472,10 +430,9 @@ public class MATC extends AbstractVerticle {
 		 * partial updates via JSON chages
 		 */
 		router.route(HttpMethod.POST, "/rest/apps/:appID/update").handler(app.applyChanges());
+
 		
-		
-		
-		ImageREST image = new ImageREST(client, config.getString("image.folder.apps"), config);
+		ImageREST image = new ImageREST(this.tokenService, client, config.getString("image.folder.apps"), config);
 		image.setACL(new AppAcl(client));
 		image.setIdParameter("appID");
 		
@@ -489,7 +446,7 @@ public class MATC extends AbstractVerticle {
 	
 
 	private void initUserRest(JsonObject config, Router router) {
-		UserREST user = new UserREST(client,config);
+		UserREST user = new UserREST(this.tokenService, client,config);
 		
 		router.route(HttpMethod.POST, "/rest/user").handler(user.create());
 		router.route(HttpMethod.POST, "/rest/user/:id/images/").handler(user.setImage());
@@ -502,15 +459,13 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.DELETE, "/rest/login").handler(user.logout());
 		router.route(HttpMethod.GET, "/rest/retire").handler(user.retire());
 		router.route(HttpMethod.POST, "/rest/user/notification/last.json").handler(user::updateNotificationView);
-		router.route(HttpMethod.GET, "/rest/user/notification/last.json").handler(user::getNotifcationView);
+		router.route(HttpMethod.GET, "/rest/user/notification/last.json").handler(user::getNotificationView);
 		router.route(HttpMethod.POST, "/rest/user/privacy/update.json").handler(user::updatePrivacy);
-		
-		
-		
-		PasswordRest pass = new PasswordRest(client);
+
+		// FIXME: this makes only sense, if we do not use key cloack
+		PasswordRest pass = new PasswordRest(this.tokenService, client);
 		router.route(HttpMethod.POST, "/rest/user/password/request").handler(pass.resetPassword());
 		router.route(HttpMethod.POST, "/rest/user/password/set").handler(pass.setPassword());
-
 	}
 	
 

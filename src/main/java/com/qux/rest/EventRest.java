@@ -3,9 +3,10 @@ package com.qux.rest;
 import java.util.Map;
 
 import com.qux.acl.EventAcl;
+import com.qux.auth.ITokenService;
 import com.qux.model.AppPart;
 import com.qux.model.Event;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.RoutingContext;
@@ -15,8 +16,8 @@ public class EventRest extends MongoREST {
 	private static String EXCLUDE = "exclude";
 	
 
-	public EventRest(MongoClient db) {
-		super(db, Event.class);
+	public EventRest(ITokenService tokenService, MongoClient db) {
+		super(tokenService, db, Event.class);
 		setACL(new EventAcl(db));
 	}
 

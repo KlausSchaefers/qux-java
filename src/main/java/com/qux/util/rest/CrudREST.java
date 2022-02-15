@@ -1,11 +1,13 @@
-package com.qux.util;
+package com.qux.util.rest;
 
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import com.qux.acl.Acl;
+import com.qux.auth.ITokenService;
 import com.qux.model.User;
+import com.qux.util.Mail;
 import com.qux.validation.Validator;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -14,13 +16,17 @@ import io.vertx.ext.web.RoutingContext;
 
 public abstract class CrudREST extends REST {
 	
-	protected Validator valicator;
+	protected Validator validator;
 	
 	protected Acl acl;
-	
+
+	public CrudREST(ITokenService tokenService) {
+		super(tokenService);
+	}
+
 
 	public void setValidator(Validator v) {
-		this.valicator = v;
+		this.validator = v;
 	}
 	
 	public void setACL(Acl a) {
@@ -64,8 +70,8 @@ public abstract class CrudREST extends REST {
 	private void createAllowed(RoutingContext event) {
 		JsonObject json = getJson(event);
 		if(json!=null){
-			if (this.valicator != null) {
-				this.valicator.validate(json, true, err -> {
+			if (this.validator != null) {
+				this.validator.validate(json, true, err -> {
 					if (err.isEmpty()) {
 						beforeCreate(event, json);
 						create(event, json);
@@ -139,8 +145,8 @@ public abstract class CrudREST extends REST {
 		JsonObject json = getJson(event);
 		
 		if(json!=null){
-			if(this.valicator!=null){
-				this.valicator.validate(json, false, new Handler<List<String>>() {
+			if(this.validator !=null){
+				this.validator.validate(json, false, new Handler<List<String>>() {
 	
 					@Override
 					public void handle(List<String> errors) {

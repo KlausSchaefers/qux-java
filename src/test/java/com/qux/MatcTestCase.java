@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import com.qux.acl.Acl;
+import com.qux.mocks.SyncMongoClient;
 import com.qux.util.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;

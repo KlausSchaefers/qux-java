@@ -1,4 +1,4 @@
-package com.qux.util;
+package com.qux.util.rest;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

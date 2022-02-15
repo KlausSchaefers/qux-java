@@ -1,9 +1,6 @@
 package com.qux.bus;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-
-import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,13 +89,6 @@ public class ImageUploadHandler implements Handler<Message<JsonObject>>{
 			JsonObject img = array.getJsonObject(i);
 				
 			String filename = folder + "/" +img.getString("url");
-			
-			String type = Util.getFileType(filename);
-			if("psd".equals(type)){
-				convertPSD2JPG(img, filename);
-				filename = folder + "/" +img.getString("url");
-			}
-			
 			try{
 			
 				
@@ -140,60 +130,4 @@ public class ImageUploadHandler implements Handler<Message<JsonObject>>{
 			});
 		}
 	}
-
-
-
-
-	private String convertPSD2JPG(JsonObject img, String filename) {
-		try{
-			/**
-			 * Init all file names and path like ImageRest
-			 */
-			String appID = img.getString("appID");
-			String imageID = Util.getRandomString();
-			String pndImage = imageID + ".jpg";
-			String jpgImageFilename = folder +"/" +appID+"/" +  pndImage;
-			File psdFile = new File(filename);
-			File jpgFile = new File(jpgImageFilename);
-			
-			logger.info("convertPSD2JPG() > Convert PDS to " + jpgImageFilename); 
-			
-			
-			/**
-			 * Load image
-			 */
-			BufferedImage image = ImageIO.read(psdFile);
-			
-				
-			/**
-			 * save as png
-			 */
-			ImageIO.write(image, "JPEG", jpgFile);
-			
-			/**
-			 * update image object
-			 */
-			String url = appID + "/" + pndImage;
-			img.put("orginal", img.getString("url"));
-			img.put("url", url);
-			
-			/**
-			 * delete psd file
-			 */
-			if(!psdFile.delete()){
-				logger.error("convertPSD2JPG() > Could not delete psd file");
-			}
-			
-			filename = pndImage;
-		} catch(Exception e){
-			logger.error("convertPSD2JPG() > could not convert psd");
-		}
-		return filename;
-	}
-
-
-
-
-	
-
 }

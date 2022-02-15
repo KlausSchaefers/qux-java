@@ -1,4 +1,4 @@
-package com.qux.util;
+package com.qux.util.rest;
 
 import java.util.HashMap;
 

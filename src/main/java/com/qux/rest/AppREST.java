@@ -8,6 +8,7 @@ import java.util.Set;
 import com.qux.acl.Acl;
 import com.qux.acl.AppAcl;
 import com.qux.acl.RoleACL;
+import com.qux.auth.ITokenService;
 import org.slf4j.LoggerFactory;
 
 import com.qux.model.App;
@@ -20,8 +21,8 @@ import com.qux.model.Team;
 import com.qux.model.User;
 import com.qux.util.DB;
 import com.qux.util.Mail;
-import com.qux.util.MongoREST;
-import com.qux.util.MongoUtil;
+import com.qux.util.rest.MongoREST;
+import com.qux.util.rest.MongoUtil;
 import com.qux.util.PreviewEngine;
 import com.qux.util.Util;
 import com.qux.validation.AppValidator;
@@ -44,16 +45,15 @@ public class AppREST extends MongoREST {
 	private final String team_db, inv_db, image_db;
 	
 	private final String imageFolder;
-	
 	/**
 	 * Default AppREst with users ACL
 	 */
-	public AppREST(MongoClient db, String folder) {
-		this(db, folder, new RoleACL(new AppAcl(db)).read(User.GUEST));
+	public AppREST(ITokenService tokenService, MongoClient db, String folder) {
+		this(tokenService, db, folder, new RoleACL(new AppAcl(db)).read(User.GUEST));
 	}
 	
-	public AppREST(MongoClient db, String folder, Acl acl) {
-		super(db, App.class);
+	public AppREST(ITokenService tokenService, MongoClient db, String folder, Acl acl) {
+		super(tokenService, db, App.class);
 		this.setACL(acl);
 		this.setValidator(new AppValidator(db, this));
 		this.setReturnUpdatedObject(false);

@@ -2,19 +2,20 @@ package com.qux.rest;
 
 import com.qux.acl.AppPartAcl;
 import com.qux.acl.RoleACL;
+import com.qux.auth.ITokenService;
 import com.qux.model.AppPart;
 import com.qux.model.User;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.mongo.MongoClient;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import com.qux.validation.PojoValidator;
 
 public class AppPartREST<T> extends MongoREST{
 	
-	public AppPartREST(MongoClient db, Class<T> cls, String idParameter) {
-		super(db, cls);
+	public AppPartREST(ITokenService tokenService, MongoClient db, Class<T> cls, String idParameter) {
+		super(tokenService, db, cls);
 		
 		/**
 		 * use simple pojo validation
@@ -185,8 +186,8 @@ public class AppPartREST<T> extends MongoREST{
 			.put("lastUpdate", System.currentTimeMillis());
 		
 		
-		if(this.valicator!=null){
-			this.valicator.validate(json, true, errors ->{
+		if(this.validator !=null){
+			this.validator.validate(json, true, errors ->{
 				if(errors.isEmpty()){
 					updateByApp(event, json);
 				} else {

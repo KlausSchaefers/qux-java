@@ -2,6 +2,7 @@ package com.qux.rest;
 
 import com.qux.acl.AppPartAcl;
 import com.qux.acl.RoleACL;
+import com.qux.auth.ITokenService;
 import com.qux.model.AppPart;
 import com.qux.model.CommandStack;
 import com.qux.model.Model;
@@ -15,8 +16,8 @@ import io.vertx.ext.web.RoutingContext;
 
 public class CommandStackREST extends AppPartREST<CommandStack>{
 
-	public CommandStackREST(MongoClient db) {
-		super(db, CommandStack.class, "commandStackID");
+	public CommandStackREST(ITokenService tokenService, MongoClient db) {
+		super(tokenService, db, CommandStack.class, "commandStackID");
 		this.setValidator(new CommandStackValidator());
 		this.setACL(new RoleACL( new AppPartAcl(db)));
 	}
@@ -231,7 +232,7 @@ public class CommandStackREST extends AppPartREST<CommandStack>{
 		}
 		
 		JsonObject command = event.getBodyAsJson();
-		this.valicator.validate(command, false, errors ->{
+		this.validator.validate(command, false, errors ->{
 			
 			if(errors.isEmpty()){
 				this.acl.canWrite(getUser(event), event, allowed -> {

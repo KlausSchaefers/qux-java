@@ -1,7 +1,7 @@
 package com.qux;
 
 import com.qux.model.App;
-import com.qux.util.MongoREST;
+import com.qux.util.rest.MongoREST;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;

@@ -2,6 +2,7 @@ package com.qux.rest;
 
 import java.util.List;
 
+import com.qux.auth.ITokenService;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
@@ -11,7 +12,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.qux.util.REST;
+import com.qux.util.rest.REST;
 
 public class TemplateRest extends REST {
 
@@ -21,7 +22,8 @@ public class TemplateRest extends REST {
 	
 	private String cache;
 	
-	public TemplateRest(boolean disbaleCache) {
+	public TemplateRest(ITokenService tokenService, boolean disbaleCache) {
+		super(tokenService);
 		this.disbaleCache = disbaleCache;
 		logger.info("constructor() > disbaleCache : " + this.disbaleCache);
 	}
@@ -32,8 +34,6 @@ public class TemplateRest extends REST {
 			public void handle(RoutingContext event) {
 				get(event);
 			}
-
-			
 		};
 	}
 	
