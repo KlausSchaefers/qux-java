@@ -83,6 +83,10 @@ public class Config {
         return false;
     }
 
+    public static boolean isFileSystem(JsonObject config) {
+        return true;
+    }
+
     public static JsonObject getMail(JsonObject config) {
         JsonObject mailConfig = config.getJsonObject("mail");
         if (mailConfig == null) {
@@ -219,4 +223,6 @@ public class Config {
             result.put(KEY_CLOAK_CLIENT_REALM, env.get(ENV_KEY_CLOAK_REALM));
         }
     }
+
+
 }

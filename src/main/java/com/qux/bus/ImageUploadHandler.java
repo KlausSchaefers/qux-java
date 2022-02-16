@@ -44,8 +44,7 @@ public class ImageUploadHandler implements Handler<Message<JsonObject>>{
 		JsonArray array = msg.getJsonArray("images");
 		
 		client.findOne(app_db, App.findById(appID), App.getFields("screenSize"), res->{
-			
-			if(res.succeeded()){
+			if (res.succeeded()){
 				
 				JsonObject app = res.result();
 				if(app!=null){
@@ -55,17 +54,12 @@ public class ImageUploadHandler implements Handler<Message<JsonObject>>{
 					this.logger.error("handle() > Could not load app " + appID);
 					event.reply(new JsonArray());
 				}
-
-		
 			} else {
 				this.logger.error("handle() > Could not load app " + appID);
 				event.reply(new JsonArray());
 
 			}
 		});
-		
-		
-		
 	}
 
 
@@ -99,7 +93,7 @@ public class ImageUploadHandler implements Handler<Message<JsonObject>>{
 				
 				if(bimg!= null){
 					/**
-					 * update json
+					 * update json with with and height
 					 */
 					img.put("width", bimg.getWidth());
 					img.put("height", bimg.getHeight());
@@ -113,7 +107,6 @@ public class ImageUploadHandler implements Handler<Message<JsonObject>>{
 			/**
 			 * Update object in mongo
 			 */
-		
 			client.save(image_db, img, res->{
 				if(!res.succeeded()){
 					logger.error("handle() > could not store image");

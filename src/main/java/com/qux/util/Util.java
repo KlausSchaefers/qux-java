@@ -33,15 +33,26 @@ public class Util {
 		r = r.replace('.', 'y');
 		return r;
 	}
+
+	public static BufferedImage getImage(String filename) {
+		try{
+			File file = new File(filename);
+			if(file.exists()){
+				BufferedImage image = ImageIO.read(file);
+				return image;
+			}
+		} catch(Exception e){
+			logger.error("resample() > could not convert psd > "+  filename);
+		}
+		return null;
+	}
 	
 	public static BufferedImage resample(String filename,  int maxWidth) {
 		try{
 			File file = new File(filename);
-			
 			if(file.exists()){
 				BufferedImage image = ImageIO.read(file);
 				if(maxWidth < image.getWidth()){
-					
 					logger.info("resample() > Resample from + " + image.getWidth() + " to " + maxWidth + " (" + filename + ")");
 					
 					int h = (int)(image.getHeight() * ((double)maxWidth  / (double)image.getWidth()));
@@ -58,7 +69,6 @@ public class Util {
 		} catch(Exception e){
 			logger.error("resample() > could not convert psd > "+  filename);
 		}
-		
 		return null;
 	}
 	
@@ -81,8 +91,6 @@ public class Util {
 	}
 	
 	public static boolean matchPassword(String candidate, String storedHash){
-//		String candidateHash = hashPassword(candidate);
-//		return candidateHash.equals(storedHash);
 		try{
 			return BCrypt.checkpw(candidate, storedHash);
 		} catch(Exception e){
@@ -92,11 +100,7 @@ public class Util {
 	}	
 	
 	public static String hashPassword(String s){
-		return BCrypt.hashpw(s, BCrypt.gensalt()); 
-		
-//		HashFunction hf = Hashing.sha256();
-//		String hash = hf.hashString(s,Charsets.UTF_8).toString();
-//		return hash;
+		return BCrypt.hashpw(s, BCrypt.gensalt());
 	}
 
 	public static String getFileType(String fileName) {

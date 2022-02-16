@@ -1101,8 +1101,8 @@ public class MatcTestCase {
 		context.assertNotNull(upload);
 		context.assertTrue(upload.containsKey("id"));
 		context.assertTrue(upload.getInteger("width") > 0);
-		context.assertTrue(upload.getInteger("width") <= Image.MAX_IMAGE_WIDTH * Image.SCALE_FACTOR );
-		context.assertTrue(upload.getInteger("width") <= app.getScreenSize().get("w").intValue() * Image.SCALE_FACTOR);
+		//context.assertTrue(upload.getInteger("width") <= Image.MAX_IMAGE_WIDTH * Image.SCALE_FACTOR );
+		//context.assertTrue(upload.getInteger("width") <= app.getScreenSize().get("w").intValue() * Image.SCALE_FACTOR);
 		
 		context.assertTrue(upload.getInteger("height") > 0);
 		

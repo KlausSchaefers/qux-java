@@ -33,10 +33,10 @@ public class ImageVerticle  extends AbstractVerticle {
 	public void start() {
 		this.logger.info("start() > enter");
 		
-		EventBus eb = vertx.eventBus();
+		//EventBus eb = vertx.eventBus();
 
-		String folder  = config.getString("image.folder.apps");
-		eb.consumer(MATC.BUS_IMAGES_UPLOADED, new ImageUploadHandler(client, folder ));
+		//String folder  = config.getString("image.folder.apps");
+		//eb.consumer(MATC.BUS_IMAGES_UPLOADED, new ImageUploadHandler(client, folder ));
 			
 		this.logger.info("start() > exit");
 

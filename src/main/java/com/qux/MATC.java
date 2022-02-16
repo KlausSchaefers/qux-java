@@ -3,6 +3,9 @@ package com.qux;
 import java.time.LocalDateTime;
 
 import com.qux.auth.ITokenService;
+import com.qux.blob.FileSystemService;
+import com.qux.blob.IBlobService;
+import com.qux.blob.S3BlobService;
 import com.qux.util.Config;
 import com.qux.util.DB;
 import com.qux.util.DebugMailClient;
@@ -36,7 +39,6 @@ import com.qux.rest.NotificationREST;
 import com.qux.rest.PasswordRest;
 
 import com.qux.rest.TeamREST;
-import com.qux.rest.TemplateRest;
 import com.qux.rest.TestSettingsRest;
 import com.qux.rest.UserREST;
 
@@ -60,7 +62,7 @@ public class MATC extends AbstractVerticle {
 	
 	public static final String VERSION = "4.0.50";
 
-	public static final String BUS_IMAGES_UPLOADED = "images.uploaded";
+	//public static final String BUS_IMAGES_UPLOADED = "images.uploaded";
 
 	private MongoClient client;
 	
@@ -139,6 +141,15 @@ public class MATC extends AbstractVerticle {
 		logger.error("******************************");
 		logger.error("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
 		logger.error("******************************");
+	}
+
+	private IBlobService getBlockService(String folder, JsonObject config) {
+		logger.info("getConfig() > enter");
+		if (Config.isFileSystem(config)) {
+			return new FileSystemService(folder);
+		} else {
+			return new S3BlobService();
+		}
 	}
 
 	private JsonObject getConfig() {
@@ -270,12 +281,12 @@ public class MATC extends AbstractVerticle {
 	private void initBus(JsonObject config) {
 		
 		PerformanceHandler.start(vertx, client);
-		
-		DeploymentOptions options = new DeploymentOptions().setWorker(true);
-		vertx.deployVerticle(new ImageVerticle(client, config), options);
 
-		options = new DeploymentOptions().setWorker(true);
+		DeploymentOptions options = new DeploymentOptions().setWorker(true);
 		vertx.deployVerticle(new VMHeater(client), options);
+
+		//DeploymentOptions options = new DeploymentOptions().setWorker(true);
+		//vertx.deployVerticle(new ImageVerticle(client, config), options);
 
 	}
 
@@ -427,12 +438,18 @@ public class MATC extends AbstractVerticle {
 		
 		
 		/**
-		 * partial updates via JSON chages
+		 * partial updates via JSON changes
 		 */
 		router.route(HttpMethod.POST, "/rest/apps/:appID/update").handler(app.applyChanges());
 
-		
-		ImageREST image = new ImageREST(this.tokenService, client, config.getString("image.folder.apps"), config);
+		IBlobService blobService = getBlockService(config.getString("image.folder.apps"), config);
+
+		ImageREST image = new ImageREST(
+				this.tokenService,
+				blobService,
+				client,
+				config.getLong("image.size")
+		);
 		image.setACL(new AppAcl(client));
 		image.setIdParameter("appID");
 		
