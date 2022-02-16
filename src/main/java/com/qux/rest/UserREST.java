@@ -77,35 +77,17 @@ public class UserREST extends MongoREST {
 	}
 	
 	protected void login(RoutingContext event) {
-		
+		this.logger.info("login() > enter");
 		JsonObject login = event.getBodyAsJson();
-		
-		
-		/**
-		 * make sure data is there
-		 */
 		if(login.containsKey("email") && login.containsKey("password")){
 			this.mongo.findOne(this.table, User.findByEmail(login.getString("email")), null, res -> {
-				
-				if(res.succeeded()){
-					
+				if (res.succeeded()){
 					JsonObject user = res.result();
-					
-					if(user!=null){
-						/**
-						 * The user might have retired
-						 */
+					if (user != null){
 						if (User.STATUS_RETIRED.equals(user.getString("status"))){
-							/**
-							 * We log anon as he want to be left alone...
-							 */
 							error("login", "Retired user tried login");
 							returnError(event, "user.login.fail");
 						} else {
-							
-							/**
-							 * Now check password!
-							 */
 							checkPassword(event, login, user);
 						}
 					} else {
@@ -122,7 +104,6 @@ public class UserREST extends MongoREST {
 	}
 
 
-
 	public void checkPassword(RoutingContext event, JsonObject login, JsonObject user) {
 		if(Util.matchPassword(login.getString("password"), user.getString("password"))){
 			setLoginUser(event, user);
@@ -135,18 +116,8 @@ public class UserREST extends MongoREST {
 	}
 
 
-	/**
-	 * Set user in session and update Mongo KPIs.
-	 */
 	public void setLoginUser(RoutingContext event, JsonObject user) {
-		/**
-		 * Every thing fine. We can set the user in the session
-		 */
-		//setUser(mapper.fromVertx(user, User.class), event );
-		
-		/**
-		 * We update user data...
-		 */
+
 		int loginCount = 0;
 		if(user.containsKey("loginCount")){
 			loginCount = user.getInteger("loginCount");
@@ -160,22 +131,9 @@ public class UserREST extends MongoREST {
 				logger.error("login() > Could not update lastLogin");
 			}
 		});
-		
-		/**
-		 * Log for KPI
-		 */
 		AppEvent.send(event, user.getString("email"), AppEvent.TYPE_USER_LOGIN);
-
-		/**
-		 * Create a new token and set in the response
-		 */
 		String token = this.getTokenService().getToken(user);
 		user.put("token", token);
-		
-		/**
-		 * Copy data here, other wise password  and so might be rewritten in the clean and
-		 * then in the async save the password is gone
-		 */
 		event.response().end(cleanJson(user.copy()).encode());
 	}
 
@@ -205,26 +163,14 @@ public class UserREST extends MongoREST {
 	
 	
 	public void logout(RoutingContext event) {
-		/**
-		 * Store for KPI
-		 */
 		User user = getUser(event);
 		AppEvent.send(event, user.getEmail(), AppEvent.TYPE_USER_LOGOUT);
-
 		returnOk(event, "user.logged.out");
 	}
-	
-	
-	
-	/********************************************************************************************
-	 * Delete
-	 ********************************************************************************************/
 
 	public void afterDelete(RoutingContext event, String id) {
 		logger.info("afterDelete() > " + id);
-		
 		JsonObject query =  new JsonObject().put(Team.USER_ID, id);
-		
 		mongo.removeDocuments(this.team_db, query, res ->{
 			if(res.succeeded()){
 				logger.error("Removed entries in team db");
@@ -233,23 +179,11 @@ public class UserREST extends MongoREST {
 			}
 		});
 	}
-	
-	
-	/********************************************************************************************
-	 * Create
-	 ********************************************************************************************/
 
-	
 	protected void create(RoutingContext event, JsonObject json) {
-
-		
 		json.put("created", System.currentTimeMillis());
 		json.put("lastUpdate", System.currentTimeMillis());
 		
-		/**
-		 * Set payed until ...
-		 */
-		Calendar cal = Calendar.getInstance();
 
 		json.put("email", json.getString("email").toLowerCase());
 		json.put("password", Util.hashPassword(json.getString("password")));
@@ -268,46 +202,29 @@ public class UserREST extends MongoREST {
 				logger.info("create() > User " + json.encode());
 				cleanJson(json);
 				event.response().end(json.encode());
-						
-				/**
-				 * Also send email
-				 */
+
 				Mail.to(json.getString("email"))
 					.bcc(MATC.ADMIN)
 					.subject("Welcome to Quant-UX.com")
 					.payload(new JsonObject())
 					.template(MailHandler.TEMPLATE_USER_CREATED)
 					.send(event);
-				
-				/**
-				 * Log KPI
-				 */
+
 				AppEvent.send(event, json.getString("email"), AppEvent.TYPE_USER_SIGNUP);
 				
 			} else {
 				returnError(event, table + ".create.error");
 			}
 		});
-
 	}
 	
 
-	
-	
-	/********************************************************************************************
-	 * Update
-	 ********************************************************************************************/
-
-	/**
-	 * The acl was already validated. We just has the password and make sure 
-	 * none is setting the role, plan or so...
-	 */
 	public void update(RoutingContext event, String id, JsonObject json) {
 
 		if(json.containsKey("password")){
 			json.put("password", Util.hashPassword(json.getString("password")));
 		}
-		
+
 		if(json.containsKey("role")){
 			logger.error("update() > User " + getUser(event) + " tried to set role!");
 			Mail.error(event, "UserRest.update() " + getUser(event)  + " tried to set role to " + json.getString("role"));
@@ -339,25 +256,14 @@ public class UserREST extends MongoREST {
 			logger.error("update() > User " + getUser(event) + " tried to set has!");
 			json.remove("has");
 		} 
-		
-		/**
-		 * update the user now! Set user afterwards in "afterUpdate" method.
-		 */
+
 		super.update(event, id, json);
 	}
 	
 	protected void afterUpdate(RoutingContext event, String id, JsonObject json) {
-	
-		//setUser(mapper.fromVertx(json, User.class), event );
 	}
 
-	
-	/********************************************************************************************
-	 * Set Image
-	 ********************************************************************************************/
 
-	
-	
 	public Handler<RoutingContext> setImage() {
 		return new Handler<RoutingContext>() {
 			@Override
@@ -368,7 +274,6 @@ public class UserREST extends MongoREST {
 	}
 
 	public void setImage(RoutingContext event) {
-		
 		String id  = event.request().getParam("id");
 		if (this.acl != null) {
 			this.acl.canWrite(getUser(event), event, allowed -> {
@@ -381,24 +286,14 @@ public class UserREST extends MongoREST {
 		} else {
 			this.setImage(event, id);
 		}
-		
-	
 	}
 	
 	public void setImage(RoutingContext event, String id) {
-		
 		List<FileUpload> files = new ArrayList<FileUpload>(event.fileUploads());
 		if(files.size() == 1){
-		
 			FileUpload file = files.get(0);
-				
 			setImage(event, id, file);
-			
 		} else {
-			
-			/**
-			 * delete all useless files
-			 */
 			FileSystem fs = event.vertx().fileSystem();
 			for(FileUpload file : files){
 				fs.delete(file.uploadedFileName(), res->{
@@ -407,14 +302,12 @@ public class UserREST extends MongoREST {
 			}
 			returnError(event, 404);
 		}
-		
 	}
 
 
 
 	private void setImage(RoutingContext event, String id, FileUpload file) {
-		
-		if(checkImage(file)){
+		if (checkImage(file)){
 			String userFolder = this.blobService.createFolder(event, id);
 			String imageID = System.currentTimeMillis() +"";
 			String type = Util.getFileType(file.fileName());
@@ -441,17 +334,8 @@ public class UserREST extends MongoREST {
 
 
 	private void onUserImageUploaded(RoutingContext event, String id, String image) {
-	
-		/**
-		 * Update session!
-		 */
 		User user = getUser(event);
 		user.setImage(image);
-		
-		/**
-		 * build a new user json and pass it to the update method,
-		 * which will alson send the response;
-		 */
 		JsonObject json = new JsonObject().put("image", image );
 		update(event, id, json );
 	}
@@ -459,8 +343,6 @@ public class UserREST extends MongoREST {
 	private boolean checkImage(FileUpload file) {
 		return file.size() < this.imageSize;
 	}
-	
-	
 
 	public Handler<RoutingContext> deleteImage() {
 		return new Handler<RoutingContext>() {
@@ -470,17 +352,13 @@ public class UserREST extends MongoREST {
 			}
 		};
 	}
-	
 
 	public void deleteImage(RoutingContext event) {
-		
 		String id  = event.request().getParam("id");
 		String image = event.request().getParam("image");
-		
 		if (this.acl != null) {
 			this.acl.canWrite(getUser(event), event, allowed -> {
-				
-				if(allowed){
+				if (allowed){
 					this.mongo.findOne(table, User.findById(id),null, res->{
 						if(res.succeeded() && res.result() != null){
 							
@@ -489,10 +367,9 @@ public class UserREST extends MongoREST {
 
 							JsonObject json = res.result();
 							json.remove("image");
-							
-						
+
 							JsonObject query = new JsonObject()
-							.put("$unset", new JsonObject().put("image", ""));
+								.put("$unset", new JsonObject().put("image", ""));
 							
 							mongo.updateCollection(table, User.findById(id), query, updated ->{
 								if(updated.succeeded()){
@@ -502,8 +379,6 @@ public class UserREST extends MongoREST {
 									error("deleteImage", "Could not update user");
 								}
 							});
-							
-
 							this.blobService.deleteFile(event, id, image, deleteResult -> {
 								if (!deleteResult) {
 									error("deleteImage", "Could not delete image "+ image);
@@ -526,12 +401,6 @@ public class UserREST extends MongoREST {
 		}
 	}
 
-	
-	/********************************************************************************************
-	 * Get Image
-	 ********************************************************************************************/
-
-
 	public Handler<RoutingContext> getImage() {
 		return new Handler<RoutingContext>() {
 			@Override
@@ -540,7 +409,6 @@ public class UserREST extends MongoREST {
 			}
 		};
 	}
-	
 
 	public void getImage(RoutingContext event) {
 		
@@ -559,15 +427,11 @@ public class UserREST extends MongoREST {
 			getImage(event, id, image);
 		}
 	}
-	
-	
-	
+
 	public void getImage(RoutingContext event, String userID, String image) {
 		this.blobService.getBlob(event, userID, image);
 	}
-	
-	
-	
+
 	public Handler<RoutingContext> retire() {
 		return new Handler<RoutingContext>() {
 			@Override
@@ -576,11 +440,6 @@ public class UserREST extends MongoREST {
 			}
 		};
 	}
-	
-	
-	/********************************************************************************************
-	 * retire user
-	 ********************************************************************************************/
 
 	public void retireUser(RoutingContext event) {
 		logger.info("retireUser() > enter ");
@@ -609,12 +468,6 @@ public class UserREST extends MongoREST {
 		}
 	
 	}
-	
-	
-
-	/********************************************************************************************
-	 * Update
-	 ********************************************************************************************/
 
 	public void updateNotificationView(RoutingContext event){
 		User user = this.getUser(event);
@@ -649,38 +502,23 @@ public class UserREST extends MongoREST {
 			returnJson(event, result);
 		}
 	}
-	
-	/********************************************************************************************
-	 * GDPR
-	 ********************************************************************************************/
 
-	
 	public void updatePrivacy(RoutingContext event){
 		User user = this.getUser(event);
 		logger.debug("updatePrivacy() > enter > " + user); 
 		if (!user.isGuest()){
 			JsonObject update =  new JsonObject().put("acceptedGDPR", true);
 			particalUpdate(event, getUser(event).getId(), update);
-			
 			AppEvent.send(event, user.getEmail(), AppEvent.TYPE_USER_UDPATE_PRIVACY);
-			
 		} else {
 			logger.debug("updateNotificationView() > Called for guest..."); 
 			returnOk(event, "user.notificaiton.update");
 		}
 	}
 	
-
-	/********************************************************************************************
-	 * Helper
-	 ********************************************************************************************/
-	
 	protected JsonObject cleanJson(JsonObject user){
 		user.remove("password");
 		return super.cleanJson(user);
 	}
-
-	
-
 
 }
