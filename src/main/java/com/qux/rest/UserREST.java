@@ -7,6 +7,7 @@ import java.util.List;
 import com.qux.MATC;
 import com.qux.acl.UserAcl;
 import com.qux.auth.ITokenService;
+import com.qux.blob.IBlobService;
 import com.qux.bus.MailHandler;
 import com.qux.model.AppEvent;
 import com.qux.model.Team;
@@ -29,7 +30,7 @@ import io.vertx.ext.web.RoutingContext;
 
 public class UserREST extends MongoREST {
 
-	private final String imageFolder;
+	//private final String imageFolder;
 	
 	private final String team_db;
 
@@ -37,9 +38,11 @@ public class UserREST extends MongoREST {
 	
 	private final Logger logger = LoggerFactory.getLogger(UserREST.class);
 
-	public UserREST(ITokenService tokenService, MongoClient db, JsonObject conf) {
+	private final IBlobService blobService;
+
+	public UserREST(ITokenService tokenService, IBlobService blobService, MongoClient db, JsonObject conf) {
 		super(tokenService, db, User.class);
-		this.imageFolder = conf.getString("image.folder.user");
+		this.blobService = blobService;
 		this.imageSize = conf.getLong("image.size");
 		this.team_db = DB.getTable(Team.class);
 		setACL(new UserAcl(db));
@@ -412,35 +415,18 @@ public class UserREST extends MongoREST {
 	private void setImage(RoutingContext event, String id, FileUpload file) {
 		
 		if(checkImage(file)){
-			FileSystem fs = event.vertx().fileSystem();
-			
-			String userFolder = imageFolder +"/" + id ;
-			
-			fs.mkdirs(userFolder, res -> {
-				
-				String imageID = System.currentTimeMillis() +"";
-				String type = Util.getFileType(file.fileName());
-				String image = imageID + "." + type;
-				String dest = userFolder +"/" +  image;
-
-				fs.move(file.uploadedFileName(),dest , res2->{
-					
-					if(res2.succeeded()){
-						/**
-						 * now update object in db!
-						 */
-						onUserImageUploaded(event, id, image);
-						
-					} else {
-						/**
-						 * FIXME: Do we have to remove the upload??
-						 */
-						returnError(event, "user.image.error2");
-					}
-				});
+			String userFolder = this.blobService.createFolder(event, id);
+			String imageID = System.currentTimeMillis() +"";
+			String type = Util.getFileType(file.fileName());
+			String image = imageID + "." + type;
+			String dest = userFolder +"/" +  image;
+			this.blobService.setBlob(event, file.uploadedFileName(), dest, uploadResult -> {
+				if (uploadResult) {
+					onUserImageUploaded(event, id, image);
+				} else {
+					returnError(event, "user.image.error2");
+				}
 			});
-			
-		
 		} else {
 			FileSystem fs = event.vertx().fileSystem();
 			fs.delete(file.uploadedFileName(),res->{
@@ -517,24 +503,12 @@ public class UserREST extends MongoREST {
 								}
 							});
 							
-							
-							/**
-							 * Delete the image async
-							 */
-							String file = imageFolder  +"/" + id + "/" + image ;
-							FileSystem fs = event.vertx().fileSystem();
-							fs.exists(file, exists->{
-								if(exists.succeeded() && exists.result()){
-									fs.delete(file, deleted ->{
-										if(!deleted.succeeded()){
-											error("deleteImage", "Could not delete image "+ file);
-										} else {
-											System.out.println("Deleted " + file);
-										}
-									});
+
+							this.blobService.deleteFile(event, id, image, deleteResult -> {
+								if (!deleteResult) {
+									error("deleteImage", "Could not delete image "+ image);
 								}
 							});
-	
 						} else {
 							error("deleteImage", "Could not load user" );
 							returnError(event, 405);
@@ -589,12 +563,7 @@ public class UserREST extends MongoREST {
 	
 	
 	public void getImage(RoutingContext event, String userID, String image) {
-		
-		String file = imageFolder  +"/" + userID + "/" + image ;
-		event.response().putHeader("Cache-Control", "no-transform,public,max-age=86400,s-maxage=86401");
-		event.response().putHeader("ETag", userID+"/"+image);
-		event.response().sendFile(file);
-	
+		this.blobService.getBlob(event, userID, image);
 	}
 	
 	

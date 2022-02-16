@@ -19,11 +19,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class AppRestTest4 extends MatcTestCase {
-	
-	MongoUtil util = new MongoUtil();
-	
 
-	
 	@Test
 	public void testAppCopy2(TestContext context){
 		log("testAppCopy2", "enter");
@@ -94,13 +90,13 @@ public class AppRestTest4 extends MatcTestCase {
 		
 		
 		assertList("/rest/images/" + newId + ".json", 1, context);
-		
+
 		/**
 		 * Check all images
 		 */
-		this.assertBackgroundImageUrls(newApp.getJsonObject("screens"), newId, context);		
 		this.assertBackgroundImageUrls(newApp.getJsonObject("widgets"), newId, context);
-		
+		this.assertBackgroundImageUrls(newApp.getJsonObject("screens"), newId, context);		
+
 		log("testAppCopy", "enter");
 	}
 
@@ -117,7 +113,7 @@ public class AppRestTest4 extends MatcTestCase {
 					
 					try{
 						InputStream is = getRaw("/rest/images/" + url + "?token=" + this.getJWT());
-						context.assertTrue(is !=null);						
+						context.assertTrue(is != null);
 						ImageIO.read(is);					
 						is.close();
 					} catch(Exception e){

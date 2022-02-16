@@ -103,12 +103,7 @@ public class ImageRestTest extends MatcTestCase {
 			BufferedImage image = ImageIO.read(is);
 		
 			log("assertRaw", img.getString("url") + " > " +image.getWidth() );
-			//context.assertTrue(image.getWidth() <= Image.MAX_IMAGE_WIDTH * Image.SCALE_FACTOR, "Wrong width "+ image.getWidth());
-			//context.assertTrue(image.getWidth() <= app.getScreenSize().get("w").intValue() * Image.SCALE_FACTOR);
-			
 			is.close();
-			
-			
 		}
 	}
 

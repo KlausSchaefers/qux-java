@@ -15,9 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.qux.acl.AppAcl;
 import com.qux.acl.InvitationCommentACL;
-import com.qux.bus.ImageVerticle;
 import com.qux.bus.MailHandler;
-import com.qux.bus.PerformanceHandler;
 
 
 import com.qux.bus.VMHeater;
@@ -74,7 +72,7 @@ public class MATC extends AbstractVerticle {
 	
 	private boolean isDebug = false;
 
-	private String startedTime = LocalDateTime.now().toString();
+	private final String startedTime = LocalDateTime.now().toString();
 
 	public static String ADMIN = "admin@quant-ux.com";
 
@@ -84,19 +82,10 @@ public class MATC extends AbstractVerticle {
 	public void start() {
 		this.logger.info("start() > enter");
 
-		/**
-		 * Load config
-		 */
-		JsonObject config = initConfig();
 
-		/**
-		 * Create MongoDB client
-		 */
+		JsonObject config = initConfig();
 		initMongo(config);
-		
-		/**
-		 * Set body and cookie handler
-		 */
+
 		Router router = Router.router(vertx);
 		router.route().handler(BodyHandler.create().setMergeFormAttributes(false));
 		router.route().handler(CorsHandler.create("*")
@@ -107,12 +96,9 @@ public class MATC extends AbstractVerticle {
 				.allowedHeader("Access-Control-Allow-Headers")
 				.allowedHeader("Content-Type"));
 
-		/**
-		 * Init Rest Services and Event Listeners
-		 */
 		initTokenService(config);
 		initMail(router, config);
-		initStatus(config, router);
+		initStatus(router);
 		initUserRest(config, router);
 		initAppRest(router, config);
 		initTeamRest(router);
@@ -120,15 +106,13 @@ public class MATC extends AbstractVerticle {
 		initCommentRest(router);
 		initEventRest(router);
 		initInvitationRest(router, config);
-		initAnnotationRest(router, config);
+		initAnnotationRest(router);
 		initTestRest(router);
-		initNotification(router,config);
-		initLibrary(router, config);
-		initBus(config);
+		initNotification(router);
+		initLibrary(router);
+		initBus();
 
-		/**
-		 * Launch server
-		 */
+
 		HttpServerOptions options = new HttpServerOptions()
 			.setCompressionSupported(true);
 		
@@ -156,8 +140,7 @@ public class MATC extends AbstractVerticle {
 		logger.info("getConfig() > Enter");
 		JsonObject config = this.config();
 		JsonObject defaultConfig = Config.setDefaults(config);
-		JsonObject mergedConfig = Config.mergeEnvIntoConfig(defaultConfig);
-		return mergedConfig;
+		return Config.mergeEnvIntoConfig(defaultConfig);
 	}
 
 	private JsonObject initConfig() {
@@ -174,16 +157,14 @@ public class MATC extends AbstractVerticle {
 		return config;
 	}
 
-	private void initStatus(JsonObject config, Router router) {
-		router.route(HttpMethod.GET, "/rest/status.json").handler(event -> {
-			event.response().end(new JsonObject()
-					.put("started", startedTime)
-					.put("version", VERSION)
-					.encodePrettily());
-		});
+	private void initStatus(Router router) {
+		router.route(HttpMethod.GET, "/rest/status.json").handler(event -> event.response().end(new JsonObject()
+				.put("started", startedTime)
+				.put("version", VERSION)
+				.encodePrettily()));
 	}
 
-	private void initLibrary(Router router, JsonObject config) {
+	private void initLibrary(Router router) {
 		
 		LibraryRest libs = new LibraryRest(this.tokenService, client);
 		router.route(HttpMethod.GET, "/rest/libs").handler(libs.findByUser());
@@ -201,16 +182,11 @@ public class MATC extends AbstractVerticle {
 
 
 	public void initTokenService (JsonObject config) {
-
-		/**
-		 * Check here which token service to use
-		 */
 		if (Config.isKeyCloak(config)) {
 			throw new RuntimeException("KeyCloak not supported");
 		} else {
 			initQUXTokenService(config);
 		}
-
 	}
 
 	private void initQUXTokenService(JsonObject config) {
@@ -226,7 +202,7 @@ public class MATC extends AbstractVerticle {
 	}
 
 
-	private void initNotification(Router router, JsonObject config) {
+	private void initNotification(Router router) {
 		NotificationREST rest = new NotificationREST(this.tokenService, client);
 		router.route(HttpMethod.GET, "/rest/notifications.json").handler(rest::findByUser);
 	}
@@ -261,7 +237,7 @@ public class MATC extends AbstractVerticle {
 
 	private MailClient createMail(JsonObject config){
 
-		logger.info("createMail() > enter", config.getString("user"));
+		logger.info("createMail() > enter" + config.getString("user"));
 
 		if(this.isDebug){
 			return new DebugMailClient();
@@ -278,31 +254,15 @@ public class MATC extends AbstractVerticle {
 		}
 	}
 
-	private void initBus(JsonObject config) {
-		
-		PerformanceHandler.start(vertx, client);
-
+	private void initBus() {
 		DeploymentOptions options = new DeploymentOptions().setWorker(true);
 		vertx.deployVerticle(new VMHeater(client), options);
-
-		//DeploymentOptions options = new DeploymentOptions().setWorker(true);
-		//vertx.deployVerticle(new ImageVerticle(client, config), options);
-
 	}
 
-	
 	private void initCommandRest(Router router) {
-		
 		CommandStackREST commandStack = new CommandStackREST(this.tokenService, client);
-		/**
-		 * complete getters and setters
-		 */
 		router.route(HttpMethod.GET, "/rest/commands/:appID.json").handler(commandStack.findOrCreateByApp());
 		router.route(HttpMethod.POST, "/rest/commands/:appID.json").handler(commandStack.updateByApp());
-		
-		/**
-		 * partial updates
-		 */
 		router.route(HttpMethod.POST, "/rest/commands/:appID/add").handler(commandStack.add());
 		router.route(HttpMethod.DELETE, "/rest/commands/:appID/pop/:count").handler(commandStack.pop());
 		router.route(HttpMethod.POST, "/rest/commands/:appID/undo").handler(commandStack.undo());
@@ -318,9 +278,9 @@ public class MATC extends AbstractVerticle {
 	}
 	
 	
-	private void initAnnotationRest(Router router, JsonObject config) {
+	private void initAnnotationRest(Router router) {
 		
-		AppPartREST<Annotation> rest = new AppPartREST<Annotation>(this.tokenService, client, Annotation.class, "annotationID");
+		AppPartREST<Annotation> rest = new AppPartREST<>(this.tokenService, client, Annotation.class, "annotationID");
 		
 		router.route(HttpMethod.GET, "/rest/annotations/apps/:appID/all.json").handler(rest.findBy());
 		router.route(HttpMethod.GET, "/rest/annotations/apps/:appID/:type.json").handler(rest.findBy());
@@ -358,12 +318,7 @@ public class MATC extends AbstractVerticle {
 				config.getInteger("http.port"));
 		
 		router.route(HttpMethod.GET, "/rest/invitation/:appID.json").handler(invitation.findByApp());
-		router.route(HttpMethod.GET, "/rest/invitation/:appID/test.jpg").handler(invitation.getTestQR());
-		router.route(HttpMethod.GET, "/rest/invitation/:appID/debug.jpg").handler(invitation.getDebugQR());
 
-		router.route(HttpMethod.GET, "/rest/invitation/hash/:hash/test.jpg").handler(invitation.getTestQRByHash());
-		router.route(HttpMethod.GET, "/rest/invitation/hash/:hash/debug.jpg").handler(invitation.getDebugQRByHash());
-		
 		router.route(HttpMethod.GET, "/rest/invitation/:hash/app.json").handler(invitation.findAppByHash());
 		router.route(HttpMethod.GET, "/rest/invitation/:hash/update.json").handler(invitation::getLastUpdate);
 		router.route(HttpMethod.GET, "/rest/invitation/:appID/:hash/test.json").handler(invitation.findTestByHash());
@@ -422,9 +377,10 @@ public class MATC extends AbstractVerticle {
 	
 
 	private void initAppRest(Router router, JsonObject config) {
+
+		IBlobService blob = getBlockService(config.getString("image.folder.apps"), config);
 		
-		
-		AppREST app = new AppREST(this.tokenService, client, config.getString("image.folder.apps"));
+		AppREST app = new AppREST(this.tokenService, blob, client);
 		router.route(HttpMethod.GET, "/rest/apps").handler(app.findByUser());
 		router.route(HttpMethod.GET, "/rest/apps/public").handler(app.findPublic());
 		router.route(HttpMethod.POST, "/rest/apps").handler(app.create());
@@ -435,11 +391,6 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.DELETE, "/rest/apps/:appID.json").handler(app.delete());
 		router.route(HttpMethod.POST, "/rest/apps/copy/:appID").handler(app.copy());
 		router.route(HttpMethod.DELETE, "/rest/apps/invitation/:appID").handler(app::resetToken);
-		
-		
-		/**
-		 * partial updates via JSON changes
-		 */
 		router.route(HttpMethod.POST, "/rest/apps/:appID/update").handler(app.applyChanges());
 
 		IBlobService blobService = getBlockService(config.getString("image.folder.apps"), config);
@@ -463,7 +414,9 @@ public class MATC extends AbstractVerticle {
 	
 
 	private void initUserRest(JsonObject config, Router router) {
-		UserREST user = new UserREST(this.tokenService, client,config);
+
+		IBlobService blob = getBlockService(config.getString("image.folder.user"), config);
+		UserREST user = new UserREST(this.tokenService, blob, client,config);
 		
 		router.route(HttpMethod.POST, "/rest/user").handler(user.create());
 		router.route(HttpMethod.POST, "/rest/user/:id/images/").handler(user.setImage());

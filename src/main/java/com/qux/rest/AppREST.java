@@ -9,6 +9,7 @@ import com.qux.acl.Acl;
 import com.qux.acl.AppAcl;
 import com.qux.acl.RoleACL;
 import com.qux.auth.ITokenService;
+import com.qux.blob.IBlobService;
 import org.slf4j.LoggerFactory;
 
 import com.qux.model.App;
@@ -43,16 +44,18 @@ public class AppREST extends MongoREST {
 	private final PreviewEngine preview = new PreviewEngine();
 	
 	private final String team_db, inv_db, image_db;
-	
-	private final String imageFolder;
+
+	private final IBlobService blobService;
+
+
 	/**
 	 * Default AppREst with users ACL
 	 */
-	public AppREST(ITokenService tokenService, MongoClient db, String folder) {
-		this(tokenService, db, folder, new RoleACL(new AppAcl(db)).read(User.GUEST));
+	public AppREST(ITokenService tokenService, IBlobService blobService,  MongoClient db ) {
+		this(tokenService, blobService, db, new RoleACL(new AppAcl(db)).read(User.GUEST));
 	}
 	
-	public AppREST(ITokenService tokenService, MongoClient db, String folder, Acl acl) {
+	public AppREST(ITokenService tokenService, IBlobService blobService, MongoClient db, Acl acl) {
 		super(tokenService, db, App.class);
 		this.setACL(acl);
 		this.setValidator(new AppValidator(db, this));
@@ -62,7 +65,7 @@ public class AppREST extends MongoREST {
 		this.inv_db = DB.getTable(Invitation.class);
 		this.image_db = DB.getTable(Image.class);
 		this.part_dbs = App.getModelParts();
-		this.imageFolder = folder;
+		this.blobService = blobService;
 		super.logger = LoggerFactory.getLogger(AppREST.class);
 	}
 	
@@ -126,7 +129,7 @@ public class AppREST extends MongoREST {
 					JsonObject app = appResponse.result();	
 					
 					/**
-					 * 2) laod all images
+					 * 2) Load all images
 					 */
 					mongo.find(image_db, Image.findByApp(id), imageResponse ->{
 						
@@ -211,30 +214,13 @@ public class AppREST extends MongoREST {
 	
 	private void createImageFolder(RoutingContext event, JsonObject oldApp, List<JsonObject> images, JsonObject newApp){
 
-		String newID = newApp.getString("_id");		
-		FileSystem fs = event.vertx().fileSystem();		
-		fs.mkdir(imageFolder + "/" + newID, folderResult->{			
-			
-			try{
-				if(folderResult.succeeded()){
-					copyImages(event, images, newApp);				
-				} else {
-					error("createImageFolder", "Could create copy folder");
-					returnError(event, "app.copy.error");
-				}
-			} catch(Exception e){
-				e.printStackTrace();
-				error("createImageFolder", "Something wenr wrong copying ... " + e.getMessage());
-				returnError(event, "app.copy.error");
-			}
-			
-		});
-				
+		String newID = newApp.getString("_id");
+		this.blobService.createFolder(event, newID);
+		copyImages(event, images, newApp);
 	}
 
 	private void copyImages(RoutingContext event, List<JsonObject> images, JsonObject newApp) {
 		
-		FileSystem fs = event.vertx().fileSystem();
 		String newID = newApp.getString("_id");
 		
 		/**
@@ -259,16 +245,12 @@ public class AppREST extends MongoREST {
 			 * Save async in mongo and copy file also afterwards
 			 */
 			mongo.save(image_db, newImage, imageResult ->{
-				
-				if(imageResult.succeeded()){
-					String oldFile = imageFolder + "/" + oldUrl;
-					String newFile = imageFolder + "/" + newUrl;
-					
-					fs.copy(oldFile, newFile, fileResult ->{
-						if(!fileResult.succeeded()){
-							this.logger.error("copyImages() > Could savecopy image" + oldFile + " > " + newFile); 
+				if (imageResult.succeeded()){
+					this.blobService.copyBlob(event, oldUrl, newUrl, copyResult -> {
+						if(!copyResult){
+							this.logger.error("copyImages() > Could savecopy image" + oldUrl + " > " + newUrl);
 						} else {
-							this.logger.debug("copyImages() > Copied image" + oldFile + " > " + newFile); 
+							this.logger.debug("copyImages() > Copied image" + oldUrl + " > " + newUrl);
 						}
 					});
 				} else {
@@ -276,11 +258,7 @@ public class AppREST extends MongoREST {
 				}			
 			});
 		}
-		
-		
-		/**
-		 * 
-		 */
+
 		if(newApp.containsKey("screens")){
 			JsonObject screens = newApp.getJsonObject("screens");
 			updateBackgroundImageUrls(replacements, screens);
@@ -329,10 +307,8 @@ public class AppREST extends MongoREST {
 							this.logger.error("copyImages() > no replacement for image " + box.encode()); 
 						}
 					} else {
-						this.logger.debug("copyImages() > Background is null " + box.encode()); 
+						this.logger.debug("copyImages() > Background is null " + box.encode());
 					}
-					
-				
 				}
 			}
 		}

@@ -30,39 +30,58 @@ public class FileSystemService implements IBlobService{
         });
     }
 
-    public void getBlob(RoutingContext event, String id, String image) {
+    @Override
+    public void copyBlob(RoutingContext event, String source, String target, Handler<Boolean> handler) {
+        logger.info("copyBlob() > enter " + source + " to " + target);
+        FileSystem fs = event.vertx().fileSystem();
+        String sourceFile = imageFolder + "/" + source;
+        String targetFile = imageFolder + "/" + target;
+        fs.copy(sourceFile, targetFile, fileResult ->{
+            if(!fileResult.succeeded()){
+               handler.handle(true);
+            } else {
+                logger.error("copyBlob() > error ", fileResult.cause());
+                handler.handle(false);
+            }
+        });
+    }
+
+    public void getBlob(RoutingContext event, String folder, String image) {
         logger.info("getBlob() > enter");
-        String file = imageFolder +"/" + id + "/" + image ;
+        String file = imageFolder +"/" + folder + "/" + image ;
         FileSystem fs = event.vertx().fileSystem();
         fs.exists(file, exists-> {
             if(exists.succeeded() && exists.result()){
+                logger.info("getBlob() > stream > " + file);
                 event.response().putHeader("Cache-Control", "no-transform,public,max-age=86400,s-maxage=86401");
-                event.response().putHeader("ETag", id);
+                event.response().putHeader("ETag", folder + image);
                 event.response().sendFile(file);
             } else {
+                logger.info("getBlob() > not found > " + file);
                 event.response().setStatusCode(404);
                 event.response().end();
             }
         });
     }
 
-    public String createFolder(RoutingContext event, String appID) {
-        /**
-         * make folder if not exists
-         */
+    public String createFolder(RoutingContext event, String folderName) {
+        logger.info("createFolder() > enter > " + folderName);
         FileSystem fs = event.vertx().fileSystem();
-        String folder = imageFolder +"/" + appID;
+        String folder = imageFolder +"/" + folderName;
         fs.mkdirsBlocking(folder);
         return folder;
     }
 
 
-    public void deleteFile(RoutingContext event, String id, String fileName) {
-        String file = imageFolder +"/" + id + "/" + fileName;
+    public void deleteFile(RoutingContext event, String folder, String fileName, Handler<Boolean> handler) {
+        String file = imageFolder +"/" + folder + "/" + fileName;
         FileSystem fs = event.vertx().fileSystem();
-        fs.delete(file, fres->{
-            if(!fres.succeeded()){
+        fs.delete(file, deleteResult->{
+            if(!deleteResult.succeeded()){
                 logger.error("delete() > Could not delete from file system !" + file);
+            }
+            if (handler != null) {
+                handler.handle(deleteResult.succeeded());
             }
         });
     }

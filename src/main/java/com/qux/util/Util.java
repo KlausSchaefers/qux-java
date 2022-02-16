@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
-import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -46,33 +45,7 @@ public class Util {
 		}
 		return null;
 	}
-	
-	public static BufferedImage resample(String filename,  int maxWidth) {
-		try{
-			File file = new File(filename);
-			if(file.exists()){
-				BufferedImage image = ImageIO.read(file);
-				if(maxWidth < image.getWidth()){
-					logger.info("resample() > Resample from + " + image.getWidth() + " to " + maxWidth + " (" + filename + ")");
-					
-					int h = (int)(image.getHeight() * ((double)maxWidth  / (double)image.getWidth()));
-					image = Scalr.resize(image, Scalr.Method.QUALITY, Scalr.Mode.FIT_TO_WIDTH,  maxWidth, h);
-				
-					if(file.exists()){
-						file.delete();
-					}
-					ImageIO.write(image, Util.getFileType(filename), file);
-				}
-				return image;
-			}
-			
-		} catch(Exception e){
-			logger.error("resample() > could not convert psd > "+  filename);
-		}
-		return null;
-	}
-	
-	
+
 	public static void cleanUpUploads( ArrayList<FileUpload> delete, FileSystem fs){
 		for(FileUpload file : delete){
 			fs.delete(file.uploadedFileName(), res->{

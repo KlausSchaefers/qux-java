@@ -16,18 +16,13 @@ import io.vertx.ext.mail.MailMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class MailHandler implements Handler<Message<JsonObject>>{
 
-	private static Logger logger = LoggerFactory.getLogger(MailHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(MailHandler.class);
 	
 	/**
 	 * Template folder
@@ -80,20 +75,17 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 
 	private final MailClient mail;
 		
-	private Handlebars handlebars;
+	private final Handlebars handlebars;
 	
-	private Map<String, Template> txtTemplates = new HashMap<String, Template>();
+	private final Map<String, Template> txtTemplates = new HashMap<>();
 	
-	private Map<String, Template> htmlTemplates = new HashMap<String, Template>();
+	private final Map<String, Template> htmlTemplates = new HashMap<>();
 	
-	private Vertx vertx;
+	private final Vertx vertx;
 	
-	private Model validator;
-	
-	public static MailHandler instance;
-	
+	private final Model validator;
+
 	public static MailHandler start(Vertx vertx, MailClient client, String from, String serverHost){
-	
 		return new MailHandler(vertx, client, from, serverHost);
 	}
 	
@@ -106,9 +98,6 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 		this.mail = mail;		
 		this.vertx = vertx;
 
-		/**
-		 * Create model for validation
-		 */
 		validator = new ModelFactory().create("MailMessage")
 				.addString(FIELD_TO)
 				.addString(FIELD_SUBJECT)
@@ -118,10 +107,6 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 
 		handlebars = new Handlebars();
 
-		/**
-		 * Load mail templates here. Load as blocking code,
-		 * because in fat-jar the files will be unzipped first.
-		 */
 		vertx.executeBlocking(handler -> {
 			String templateFolder = "qux";
 			readTemplate(templateFolder, TEMPLATE_PASSWORD_RESET);
@@ -135,16 +120,10 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 			logger.info("constructor() > loaded mails...");
 		});
 
-
-		/**
-		 * Link to event bus.
-		 */
 		EventBus eb = vertx.eventBus();
 		eb.consumer(MAIl_BUS_QUANT_UX, this);
 
-		
 		logger.info("constructor() > exit");
-		
 	}
 	
 	@Override
@@ -185,7 +164,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 						String innerHTML = htmlTemplate.apply(payload);
 
 						Template frame = htmlTemplates.get(TEMPLATE_HTML_FRAME);
-						Map<String, String> frameData = new HashMap();
+						Map<String, String> frameData = new HashMap<>();
 						frameData.put("inner", innerHTML);
 						String wrapped = frame.apply(frameData);
 						mm.setHtml(wrapped);
@@ -219,24 +198,6 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 	}
 
 
-	
-	/**
-	 * Helper method to construct valid eventbus messages
-	 * 
-	 * @param to
-	 * @param subject
-	 * @param template
-	 * @param payload
-	 * @return
-	 */
-	public static JsonObject createMessage(String to, String subject, String template, JsonObject payload){
-		return new JsonObject()
-			.put(FIELD_TO, to)
-			.put(FIELD_SUBJECT, subject)
-			.put(FIELD_TEMPLATE,template)
-			.put(FIELD_PAYLOAD, payload);
-	};
-	
 	private void readTemplate(String folder, String templateName){
 
 		String fileName = folder + "/" + templateName;

@@ -93,9 +93,9 @@ public class InvitationRestTest extends MatcTestCase {
 		getApp(klaus_app_public, context);
 		getApp(klaus_app_public2, context);
 		
-		getQRError(klaus_app_private, "debug", context);
-		getQR(klaus_app_public, "debug", context);
-		getQR(klaus_app_public2, "debug", context);
+		//getQRError(klaus_app_private, "debug", context);
+		//getQR(klaus_app_public, "debug", context);
+		//getQR(klaus_app_public2, "debug", context);
 		
 		
 		

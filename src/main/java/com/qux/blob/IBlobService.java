@@ -12,10 +12,12 @@ public interface IBlobService {
 
     void setBlob(RoutingContext event, String source, String target, Handler<Boolean> handler);
 
-    void getBlob(RoutingContext event, String appID, String file);
+    void copyBlob(RoutingContext event, String source, String target, Handler<Boolean> handler);
 
-    String createFolder(RoutingContext event, String appID);
+    void getBlob(RoutingContext event, String folder, String file);
 
-    void deleteFile(RoutingContext event, String id, String fileName);
+    String createFolder(RoutingContext event, String folder);
+
+    void deleteFile(RoutingContext event, String folder, String fileName, Handler<Boolean> handler);
 
 }

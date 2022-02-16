@@ -1,7 +1,6 @@
 package com.qux.util.rest;
 
 import com.qux.auth.ITokenService;
-import com.qux.model.Metric;
 import com.qux.model.Model;
 import com.qux.model.Team;
 import com.qux.model.User;
@@ -26,8 +25,6 @@ public class MongoREST extends CrudREST {
 	protected final MongoClient mongo;
 
 	protected String table;
-	
-	protected String metricTable;
 
 	protected String team_db;
 
@@ -44,7 +41,6 @@ public class MongoREST extends CrudREST {
 		this.mongo = db;
 		this.table = DB.getTable(cls);
 		this.logger  =LoggerFactory.getLogger(getClass());
-		this.metricTable = DB.getTable(Metric.class);
 		this.team_db = DB.getTable(Team.class);
 	}
 

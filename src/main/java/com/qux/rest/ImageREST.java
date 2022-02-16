@@ -378,7 +378,9 @@ public class ImageREST extends MongoREST {
 		mongo.removeDocuments(table, Model.findById(imageID), res ->{
 			if(res.succeeded()){
 				returnOk(event, "image.deleted");
-				this.blobService.deleteFile(event, id, fileName);
+				this.blobService.deleteFile(event, id, fileName, deleteResult -> {
+					logger.error("delete() > exit: " + deleteResult);
+				});
 			} else {
 				logger.error("delete() > Could not delete from mongo!");
 				returnError(event, 405);

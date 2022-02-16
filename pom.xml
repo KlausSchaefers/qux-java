@@ -29,12 +29,6 @@
 
 
 		<dependency>
-			<groupId>com.esotericsoftware</groupId>
-			<artifactId>kryo-shaded</artifactId>
-			<version>3.0.3</version>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.9</version>
@@ -108,19 +102,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-			<version>3.1.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>javase</artifactId>
-			<version>3.1.0</version>
-		</dependency>
-
-
-		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
@@ -146,12 +127,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>${log4j2.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.imgscalr</groupId>
-			<artifactId>imgscalr-lib</artifactId>
-			<version>4.2</version>
 		</dependency>
 
 
