@@ -183,7 +183,13 @@ public class Config {
         }
         if (env.containsKey(ENV_HTTP_PORT)) {
             logger.warn("mergeEncIntoConfig() > " + ENV_HTTP_PORT);
-            result.put(HTTP_PORT, env.get(ENV_HTTP_PORT));
+            try {
+                String port = env.get(ENV_HTTP_PORT);
+                result.put(HTTP_PORT,Integer.parseInt(port));
+            } catch (Exception e) {
+                logger.error("Config.mergeHTTP() > Could not merge http.port from env: " + ENV_HTTP_PORT);
+            }
+
         }
     }
 

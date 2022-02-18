@@ -312,26 +312,19 @@ public class MATC extends AbstractVerticle {
 	
 	
 	private void initInvitationRest(Router router, JsonObject config) {
-		
-		InvitationREST invitation = new InvitationREST(this.tokenService,client,
-				config.getString("http.server"), 
-				config.getInteger("http.port"));
-		
+		InvitationREST invitation = new InvitationREST(this.tokenService,client);
 		router.route(HttpMethod.GET, "/rest/invitation/:appID.json").handler(invitation.findByApp());
-
 		router.route(HttpMethod.GET, "/rest/invitation/:hash/app.json").handler(invitation.findAppByHash());
 		router.route(HttpMethod.GET, "/rest/invitation/:hash/update.json").handler(invitation::getLastUpdate);
 		router.route(HttpMethod.GET, "/rest/invitation/:appID/:hash/test.json").handler(invitation.findTestByHash());
 		router.route(HttpMethod.POST, "/rest/invitation/:appID/:hash/events.json").handler(invitation.addEvents());
 		router.route(HttpMethod.POST, "/rest/invitation/:appID/:hash/mouse.json").handler(invitation.addMouse());
-			
 	}
 	
 
 	private void initCommentRest(Router router) {
 		CommentREST comment = new CommentREST(this.tokenService, client);
-	
-	
+
 		router.route(HttpMethod.GET, "/rest/comments/apps/:appID.json").handler(comment.findBy());
 		router.route(HttpMethod.GET, "/rest/comments/apps/:appID/:type.json").handler(comment.findBy());
 		router.route(HttpMethod.GET, "/rest/comments/apps/:appID/:reference/:type.json").handler(comment.findBy());

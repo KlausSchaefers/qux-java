@@ -31,26 +31,22 @@ import com.qux.util.rest.MongoREST;
 
 public class InvitationREST extends MongoREST{
 	
-	private final String app_db, event_db, server, test_db, mouse_db;
+	private final String app_db, event_db, test_db, mouse_db;
 	
 	private Logger logger = LoggerFactory.getLogger(InvitationREST.class);
-	
-	private final int port;
-	
+
 	private final InvitationACL invACL;
 	
 	private final String invDB;
 	
 
-	public InvitationREST(ITokenService tokenService, MongoClient db, String server, int port) {
+	public InvitationREST(ITokenService tokenService, MongoClient db) {
 		super(tokenService, db, Invitation.class);
 		setACL(new AppAcl(db));
 		this.invACL = new InvitationACL(db);
 		this.app_db = DB.getTable(App.class);
 		this.event_db = DB.getTable(Event.class);
 		this.test_db = DB.getTable(TestSetting.class);
-		this.server = server;
-		this.port = port;
 		this.mouse_db = DB.getTable(Mouse.class);
 		this.invDB = DB.getTable(Invitation.class);
 	}
