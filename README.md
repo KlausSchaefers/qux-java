@@ -63,6 +63,25 @@ to the JSON definitions.
 Please note that we have replaced the old config of nested objects with a straight dot notation. 
 
 
+## Mongo optimization
+
+Start the `mongo` shell and run the following commands to set the correct mongo indexes
+```
+
+use MATC
+db.event.createIndex({"appID":1, "type":1})
+db.event.createIndex({"appID":1})
+db.mouse.createIndex({"appID":1})
+db.team.createIndex({"userID": 1})
+db.team.createIndex({"appID":1})
+db.team.createIndex({"userID": 1, "appID":1,"permission":1 })
+db.content.createIndex({key:1})
+db.appevent.createIndex({"created":1})
+db.invitation.createIndex({"hash": 1})
+db.invitation.createIndex({"appID":1})
+db.commandstack.createIndex({"appID":1})
+```
+
 ## Deveoptment
 
 You might need a mongo server. The simplest way is to use Docker.

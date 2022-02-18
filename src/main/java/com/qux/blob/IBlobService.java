@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface IBlobService {
 
-    void setBlob(RoutingContext event, String source, String target, Handler<Boolean> handler);
+    void setBlob(RoutingContext event, String tempFileToUpload, String target, Handler<Boolean> handler);
 
     void copyBlob(RoutingContext event, String source, String target, Handler<Boolean> handler);
 
