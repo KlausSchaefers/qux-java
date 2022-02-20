@@ -23,10 +23,11 @@ public class ConfigTestCase extends MatcTestCase {
 
         Map<String, String> env = new HashMap<>();
         env.put(Config.ENV_HTTP_HOST, "https://other.com");
+        env.put(Config.ENV_HTTP_PORT, "8080");
 
         JsonObject mergedConfig = Config.mergeEnvIntoConfig(config, env);
         context.assertEquals("https://other.com", mergedConfig.getString(Config.HTTP_HOST) );
-
+        context.assertEquals(8080, mergedConfig.getInteger(Config.HTTP_PORT));
 
         log("testMergeInEnv", "exit");
     }
