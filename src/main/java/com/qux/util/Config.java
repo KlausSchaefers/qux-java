@@ -37,11 +37,19 @@ public class Config {
 
     public static final String ENV_KEY_CLOAK_REALM = "QUX_KEYCLOAK_REALM";
 
-    public static final String ENV_KEY_CLOAK_CLIENT_ID = "QUX_KEY_CLOAK_CLIENT_ID";
-
-    public static final String ENV_KEY_CLOAK_CLIENT_SECRET = "QUX_KEYCLOAK_CLIENT_SECRET";
-
     public static final String ENV_KEY_CLOAK_SERVER = "QUX_KEYCLOAK_SERVER";
+
+    public static final String ENV_KEY_CLOAK_CLAIM_ROLE = "QUX_KEY_CLOAK_CLAIM_ROLE";
+
+    public static final String ENV_KEY_CLOAK_ISSUER = "QUX_KEY_CLOAK_ISSUER";
+
+    public static final String ENV_KEY_CLOAK_CLAIM_ID = "QUX_KEY_CLOAK_CLAIM_ID";
+
+    public static final String ENV_KEY_CLOAK_CLAIM_EMAIL = "QUX_KEY_CLOAK_CLAIM_EMAIL";
+
+    public static final String ENV_KEY_CLOAK_CLAIM_NAME = "QUX_KEY_CLOAK_CLAIM_NAME";
+
+    public static final String ENV_KEY_CLOAK_CLAIM_LASTNAME = "QUX_KEY_CLOAK_CLAIM_LASTNAME";
 
 
 
@@ -68,19 +76,29 @@ public class Config {
 
     public static final String IMAGE_FOLDER_APPS = "image.folder.apps";
 
-    public static final String KEY_CLOAK_CLIENT_ID = "auth.keycloak.client_id";
-
-    public static final String KEY_CLOAK_CLIENT_SECRET = "auth.keycloak.client_secret";
+    public static final String AUTH_SERVICE = "auth.service";
 
     public static final String KEY_CLOAK_CLIENT_SERVER = "auth.keycloak.server";
 
     public static final String KEY_CLOAK_CLIENT_REALM = "auth.keycloak.realm";
 
-    public static final String AUTH_SERVICE = "auth.service";
+    public static final String KEY_CLOAK_CLIENT_CLAIM_LASTNAME = "auth.keycloak.claim.lastname";
+
+    public static final String KEY_CLOAK_CLIENT_CLAIM_ROLE = "auth.keycloak.claim.role";
+
+    public static final String KEY_CLOAK_CLIENT_ISSUER = "auth.keycloak.issuer";
+
+    public static final String KEY_CLOAK_CLIENT_CLAIM_ID = "auth.keycloak.claim.id";
+
+    public static final String KEY_CLOAK_CLIENT_CLAIM_EMAIL = "auth.keycloak.claim.email";
+
+    public static final String KEY_CLOAK_CLIENT_CLAIM_NAME = "auth.keycloak.claim.name";
+
+
 
 
     public static boolean isKeyCloak (JsonObject config) {
-        return false;
+        return "keycloak".equals(config.getString(AUTH_SERVICE));
     }
 
     public static boolean isFileSystem(JsonObject config) {
@@ -96,6 +114,21 @@ public class Config {
                     .put("host", config.getString(MAIL_HOST));
         }
         return mailConfig;
+    }
+
+
+    public static KeyCloakConfig getKeyCloak(JsonObject config) {
+        KeyCloakConfig result = new KeyCloakConfig();
+        result.setServer(config.getString(KEY_CLOAK_CLIENT_SERVER));
+        result.setRealm(config.getString(KEY_CLOAK_CLIENT_REALM));
+        result.setIssuer(config.getString(KEY_CLOAK_CLIENT_ISSUER));
+
+        result.setClaimId(config.getString(KEY_CLOAK_CLIENT_CLAIM_ID));
+        result.setClaimEmail(config.getString(KEY_CLOAK_CLIENT_CLAIM_EMAIL));
+        result.setClaimName(config.getString(KEY_CLOAK_CLIENT_CLAIM_NAME));
+        result.setClaimLastName(config.getString(KEY_CLOAK_CLIENT_CLAIM_LASTNAME));
+        result.setClaimLastName(config.getString(KEY_CLOAK_CLIENT_CLAIM_LASTNAME));
+        return result;
     }
 
     public static String getHttpHost(JsonObject config) {
@@ -208,15 +241,37 @@ public class Config {
         }
     }
 
+
     private static void mergeKeyCloak(Map<String, String> env, JsonObject result) {
-        if (env.containsKey(ENV_KEY_CLOAK_CLIENT_ID)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLIENT_ID);
-            result.put(KEY_CLOAK_CLIENT_ID, env.get(ENV_KEY_CLOAK_CLIENT_ID));
+
+        if (env.containsKey(ENV_KEY_CLOAK_CLAIM_LASTNAME)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_LASTNAME);
+            result.put(KEY_CLOAK_CLIENT_CLAIM_LASTNAME, env.get(ENV_KEY_CLOAK_CLAIM_LASTNAME));
         }
 
-        if (env.containsKey(ENV_KEY_CLOAK_CLIENT_SECRET)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLIENT_SECRET);
-            result.put(KEY_CLOAK_CLIENT_SECRET, env.get(ENV_KEY_CLOAK_CLIENT_SECRET));
+        if (env.containsKey(ENV_KEY_CLOAK_CLAIM_NAME)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_NAME);
+            result.put(KEY_CLOAK_CLIENT_CLAIM_NAME, env.get(ENV_KEY_CLOAK_CLAIM_NAME));
+        }
+
+        if (env.containsKey(ENV_KEY_CLOAK_CLAIM_EMAIL)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_EMAIL);
+            result.put(KEY_CLOAK_CLIENT_CLAIM_EMAIL, env.get(ENV_KEY_CLOAK_CLAIM_EMAIL));
+        }
+
+        if (env.containsKey(ENV_KEY_CLOAK_CLAIM_ID)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_ID);
+            result.put(KEY_CLOAK_CLIENT_CLAIM_ID, env.get(ENV_KEY_CLOAK_CLAIM_ID));
+        }
+
+        if (env.containsKey(ENV_KEY_CLOAK_ISSUER)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_ISSUER);
+            result.put(KEY_CLOAK_CLIENT_ISSUER, env.get(ENV_KEY_CLOAK_ISSUER));
+        }
+
+        if (env.containsKey(ENV_KEY_CLOAK_CLAIM_ROLE)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_ROLE);
+            result.put(KEY_CLOAK_CLIENT_CLAIM_ROLE, env.get(ENV_KEY_CLOAK_CLAIM_ROLE));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_SERVER)) {

@@ -3,14 +3,12 @@ package com.qux;
 import java.time.LocalDateTime;
 
 import com.qux.auth.ITokenService;
+import com.qux.auth.KeyCloakTokenService;
 import com.qux.blob.FileSystemService;
 import com.qux.blob.IBlobService;
 import com.qux.blob.S3BlobService;
-import com.qux.util.Config;
-import com.qux.util.DB;
-import com.qux.util.DebugMailClient;
+import com.qux.util.*;
 import com.qux.auth.QUXTokenService;
-import com.qux.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.qux.acl.AppAcl;
@@ -58,9 +56,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.50";
-
-	//public static final String BUS_IMAGES_UPLOADED = "images.uploaded";
+	public static final String VERSION = "4.0.51";
 
 	private MongoClient client;
 	
@@ -181,9 +177,11 @@ public class MATC extends AbstractVerticle {
 	}
 
 
-	public void initTokenService (JsonObject config) {
+	public void initTokenService(JsonObject config) {
 		if (Config.isKeyCloak(config)) {
-			throw new RuntimeException("KeyCloak not supported");
+			logger.info("initTokenService() > Use keyCloak");
+			KeyCloakConfig keyCloakConfig = Config.getKeyCloak(config);
+			this.tokenService = new KeyCloakTokenService(keyCloakConfig);
 		} else {
 			initQUXTokenService(config);
 		}
@@ -196,7 +194,7 @@ public class MATC extends AbstractVerticle {
 			tokenService.setSecret(password);
 		} else {
 			tokenService.setSecret(Util.getRandomString());
-			logger.error("initTokenService() > No key. Use random!");
+			logger.error("initQUXTokenService() > No key. Use random!");
 		}
 		this.tokenService = tokenService;
 	}

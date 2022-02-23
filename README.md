@@ -27,8 +27,16 @@ the passwords the same. If you keep the password blank, a random password is gen
   "mail.host": "", // URL of mail server
   "admin": "admin@quant-ux.com", // Internal mails will be send to this persons
   "jwt.password": "test" // JWT password
+  "auth.service": "" // 'keycloak' or ''
+  "auth.keycloak.server": "",
+  "auth.keycloak.realm": "",
+  "auth.keycloak.claim.lastname": "",
+  "auth.keycloak.claim.name": "",  
+  "auth.keycloak.claim.id": "",
+  "auth.keycloak.claim.email": "",  
 }
 ```
+
 
 
 You can also provide the configuration through ENV variables. The following variables are supported, and map 
@@ -58,6 +66,25 @@ to the JSON definitions.
 
     QUX_IMAGE_FOLDER_APPS
     
+    
+    QUX_AUTH_SERVICE
+
+    QUX_KEYCLOAK_REALM
+
+    QUX_KEYCLOAK_SERVER
+
+    QUX_KEY_CLOAK_CLAIM_ROLE
+
+    QUX_KEY_CLOAK_ISSUER
+
+    QUX_KEY_CLOAK_CLAIM_ID
+
+    QUX_KEY_CLOAK_CLAIM_EMAIL
+
+    QUX_KEY_CLOAK_CLAIM_NAME
+
+    QUX_KEY_CLOAK_CLAIM_LASTNAME
+
 ```
 
 Please note that we have replaced the old config of nested objects with a straight dot notation. 
@@ -69,17 +96,22 @@ Start the `mongo` shell and run the following commands to set the correct mongo 
 ```
 
 use MATC
+db.app.createIndex({"isPublic":1})
 db.event.createIndex({"appID":1, "type":1})
 db.event.createIndex({"appID":1})
 db.mouse.createIndex({"appID":1})
 db.team.createIndex({"userID": 1})
 db.team.createIndex({"appID":1})
+db.image.createIndex({"appID":1})
 db.team.createIndex({"userID": 1, "appID":1,"permission":1 })
 db.content.createIndex({key:1})
 db.appevent.createIndex({"created":1})
 db.invitation.createIndex({"hash": 1})
 db.invitation.createIndex({"appID":1})
 db.commandstack.createIndex({"appID":1})
+db.comment.createIndex({"appID":1})
+db.testsetting.createIndex({"appID":1})
+db.user.createIndex({"email":1})
 ```
 
 ## Deveoptment
@@ -102,3 +134,16 @@ In InteliJ create a new runner with the following parameters:
 - *Main Class*: io.vertx.core.Starter
 
 - *Program Arguments*: run com.qux.MATC -conf matc.conf
+
+
+
+## Connection with KeyCloak
+
+```
+docker run -p 8081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -v $(pwd)/test/keycloak:/tmp --name qux-keycloak jboss/keycloak 
+```
+
+```
+docker run -p 8081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_IMPORT=/tmp/example-realm.json -v  $(pwd)/test/keycloak/example-realm.json:/tmp/example-realm.json --name qux-keycloak  jboss/keycloak
+```
+

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.qux</groupId>
 	<artifactId>server</artifactId>
-	<version>4.0.50</version>
+	<version>4.0.51</version>
 
 	<properties>
 		<vertx.version>3.9.11</vertx.version>
@@ -102,6 +102,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-client</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
@@ -134,13 +140,19 @@
 		<dependency>
 		    <groupId>com.auth0</groupId>
 		    <artifactId>java-jwt</artifactId>
-		    <version>3.9.0</version>
+		    <version>3.18.3</version>
 		    <exclusions>
 		        <exclusion>  <!-- declare the exclusion here -->
 		          <groupId>com.fasterxml.jackson.core</groupId>
 		          <artifactId>jackson-base</artifactId>
 		        </exclusion>
       		</exclusions> 
+		</dependency>
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>jwks-rsa</artifactId>
+			<version>0.20.2</version>
 		</dependency>
 		
 

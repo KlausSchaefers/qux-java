@@ -22,14 +22,8 @@ public class AppEvent {
 	
 	public static final String FIELD_VALUE = "value";
 
-	
-	
-	public static final String TYPE_USER_NOTIFICATION = "USER_NOTIFICATION";
-	
 	public static final String TYPE_USER_LOGIN = "USER_LOGIN";
-	
-	public static final String TYPE_USER_LOGIN_NOT_PAYED = "USER_LOGIN_NOT_PAYED";
-	
+
 	public static final String TYPE_USER_LOGOUT = "USER_LOGOUT";
 	
 	public static final String TYPE_USER_LOGIN_ERROR = "TYPE_USER_LOGIN_ERROR";
@@ -38,17 +32,10 @@ public class AppEvent {
 
 	public static final String TYPE_USER_RESET = "TYPE_USER_RESET";
 	
-	public static final String TYPE_USER_REQUEST_PLAN = "USER_REQUEST_PLAN";
-	
-	public static final String TYPE_USER_UPDATE_PALN = "USER_UPDATE_PLAN";
-	
-	public static final String TYPE_USER_EXPIRE_PLAN = "USER_EXPIRE_PLAN";
-	
 	public static final String TYPE_USER_RETIRED = "USER_RETIRED";
 	
-	public static final String TYPE_USER_UDPATE_PRIVACY = "USER_UDPATE_PRIVACY";
-	
-	
+	public static final String TYPE_USER_UPDATE_PRIVACY = "USER_UPDATE_PRIVACY";
+
 	public static final String TYPE_APP_COPY = "APP_COPY";
 	
 	public static final String TYPE_APP_CREATE = "APP_CREATE";
@@ -59,8 +46,6 @@ public class AppEvent {
 	
 	public static final String TYPE_APP_TEST = "APP_TEST";
 		
-	public static final String TYPE_APP_IMPORT_SKETCH= "APP_IMPORT_SKETCH";
-	
 	public static final String TYPE_APP_CREATE_PERMISSION ="TYPE_APP_CREATE_PERMISSION";
 	
 	public static final String TYPE_APP_COPY_PUBLIC ="TYPE_APP_COPY_PUBLIC";
@@ -68,12 +53,7 @@ public class AppEvent {
 	public static final String TYPE_APP_COPY_PRIVATE ="TYPE_APP_COPY_PRIVATE";
 	
 	public static final String TYPE_LIB_CREATE = "LIB_CREATE";
-	
-	
-	public static final String TYPE_STAFF_DELETE ="STAFF_DELETE";
-	
-	public static final String TYPE_STAFF_UPDATE ="STAFF_UPDATE";
-	
+
 	
 	public static void send(RoutingContext event, String email, String type){
 		JsonObject appEvent =  new JsonObject()

@@ -12,12 +12,10 @@ public class Invitation extends AppPart {
 	
 	public static final int WRITE = 3;
 
-	
 	public static final String HASH = "hash";
 	
 	public static final String PERMISSION = "permission";
 
-	
 	public static JsonObject create(String invID, String appID, int right){
 		return new JsonObject()
 			.put(HASH, invID)

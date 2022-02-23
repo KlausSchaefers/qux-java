@@ -2,6 +2,8 @@
 /logs/
 /.vertx/
 /file-uploads/
-/test/
+/test/apps
+/test/user
 .idea
 matc.iml
+/barista.conf

@@ -28,8 +28,6 @@ public class App extends Model{
 	private boolean isPublic = false;
 	
 	private boolean clonable = false;
-	
-	
 
 	private float rating = 0;
 	

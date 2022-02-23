@@ -37,9 +37,9 @@ public class QUXTokenService implements ITokenService{
 	private String secret = null;
 	
 	private int daysToExpire = 7;
-	
 
-			
+
+
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
@@ -118,7 +118,7 @@ public class QUXTokenService implements ITokenService{
 		    Algorithm algorithm = Algorithm.HMAC256(secret);
 		    JWTVerifier verifier = JWT.require(algorithm)
 		        .withIssuer(ISSUER)
-		        .build(); //Reusable verifier instance
+		        .build();
 		    DecodedJWT jwt = verifier.verify(token);
 		    
 		    String email = jwt.getClaim(CLAIM_EMAIL).asString();

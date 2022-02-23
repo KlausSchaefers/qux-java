@@ -58,6 +58,8 @@ import io.vertx.ext.unit.TestContext;
 
 public class MatcTestCase {
 
+	public String quxServerUrl = "http://localhost:8080";
+
 	protected Vertx vertx;
 
 	protected MongoClient mongo;
@@ -83,7 +85,6 @@ public class MatcTestCase {
 	
 	private String jwt;
 
-	private String serverURL = "http://localhost:8080";
 
 	public void setJWT(String token) {
 		this.jwt = token;
@@ -102,6 +103,10 @@ public class MatcTestCase {
 			conf.put("image.folder.user", "test/user");
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		if (conf.getInteger(Config.HTTP_PORT) != 8080) {
+			quxServerUrl = "http://localhost:" + conf.getInteger(Config.HTTP_PORT);
 		}
 
 		vertx = Vertx.vertx();
@@ -133,9 +138,6 @@ public class MatcTestCase {
 
 		httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
 
-
-
-		System.out.println("\n\n\n endBefore() --------------------------------\n\n");
 	}
 
 	void delete(File f) {
@@ -299,7 +301,7 @@ public class MatcTestCase {
 
 	public String getString(String url) {
 
-		url = "http://localhost:8080/" + url;
+		url = getUrl(url);
 		try {
 			long start = System.currentTimeMillis();
 			HttpGet httpget = new HttpGet(url);
@@ -339,7 +341,7 @@ public class MatcTestCase {
 
 	public JsonObject post(String url, String data) {
 		log("post", url);
-		url = "http://localhost:8080" + url;
+		url = getUrl(url);
 		try {
 
 			long start = System.currentTimeMillis();
@@ -385,7 +387,7 @@ public class MatcTestCase {
 
 	public JsonObject postFile(String url, String fileName) {
 		log("post", url);
-		url = "http://localhost:8080" + url;
+		url = getUrl(url);
 		try {
 
 			HttpPost post = new HttpPost(url);
@@ -429,7 +431,7 @@ public class MatcTestCase {
 	
 	public JsonObject get(String url) {
 		debug("get", url);
-		url = "http://localhost:8080" + url;
+		url = getUrl(url);
 		try {
 			long start = System.currentTimeMillis();
 			HttpGet httpget = new HttpGet(url);
@@ -464,7 +466,7 @@ public class MatcTestCase {
 
 	public InputStream getRaw(String url) {
 		debug("getRaw", url);
-		url = serverURL + url;
+		url = getUrl(url);
 		try {
 			HttpGet httpget = new HttpGet(url);
 			CloseableHttpResponse resp = httpClient.execute(httpget);
@@ -483,7 +485,7 @@ public class MatcTestCase {
 
 	public <T> T get(String url, Class<T> cls) {
 		debug("get", url);
-		url = "http://localhost:8080" + url;
+		url = getUrl(url);
 		try {
 			HttpGet httpget = new HttpGet(url);
 			if (this.jwt != null) {
@@ -512,7 +514,11 @@ public class MatcTestCase {
 		}
 
 	}
-	
+
+	private String getUrl(String url) {
+		return quxServerUrl + url;
+	}
+
 	public void logout() {
 		delete("/rest/login");
 		this.jwt = null;
@@ -520,7 +526,7 @@ public class MatcTestCase {
 
 	public JsonArray getList(String url) {
 		log("getList", url);
-		url = "http://localhost:8080" + url;
+		url = getUrl(url);
 		String json = null;
 		try {
 
@@ -566,7 +572,7 @@ public class MatcTestCase {
 
 	public JsonObject delete(String url) {
 		debug("delete", url);
-		url = serverURL + url;
+		url = getUrl(url);
 		try {
 			long start = System.currentTimeMillis();
 			HttpDelete httpget = new HttpDelete(url);
@@ -628,12 +634,6 @@ public class MatcTestCase {
 			System.out.println(aclAppID + " ? " + app.getId());
 			context.assertFalse(app.getId().equals(aclAppID));
 		}
-
-//      dunno since when this stopped working!
-//		JsonObject mongo_app = client.findOne(app_db, App.findById(app.getId()));
-//		JsonObject users = mongo_app.getJsonObject("users");
-//		log("deletePermission", "findOne(mongo) > " + users);
-//		context.assertFalse(users.containsKey(user.getId()));
 
 		return result;
 	}

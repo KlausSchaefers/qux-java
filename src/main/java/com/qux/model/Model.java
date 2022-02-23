@@ -18,10 +18,6 @@ public abstract class Model {
 	protected long created = 0;
 
 	protected long lastUpdate = 0;
-	
-	
-	
-
 
 	@JsonProperty("_id")
 	public String getId() {

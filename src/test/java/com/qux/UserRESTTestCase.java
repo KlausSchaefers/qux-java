@@ -18,15 +18,12 @@ public class UserRESTTestCase extends MatcTestCase {
 		log("testDefaultUser", "enter");
 		
 		cleanUp();
-		
 		deploy(new MATC(), context);
-		
-
 		JsonObject user = get("/rest/user");
-		System.out.println(user);
 		context.assertNotNull(user);
 		context.assertEquals(User.GUEST, user.getString("role"));
-		
+
+		log("testDefaultUser", "exit");
 	}
 
 	@Test

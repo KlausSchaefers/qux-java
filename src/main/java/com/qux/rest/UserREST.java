@@ -1,7 +1,6 @@
 package com.qux.rest;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import com.qux.MATC;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import com.qux.util.DB;
 import com.qux.util.Mail;
 import com.qux.util.rest.MongoREST;
-import com.qux.auth.QUXTokenService;
 import com.qux.util.Util;
 import com.qux.validation.UserValidator;
 import io.vertx.core.Handler;
@@ -509,7 +507,7 @@ public class UserREST extends MongoREST {
 		if (!user.isGuest()){
 			JsonObject update =  new JsonObject().put("acceptedGDPR", true);
 			particalUpdate(event, getUser(event).getId(), update);
-			AppEvent.send(event, user.getEmail(), AppEvent.TYPE_USER_UDPATE_PRIVACY);
+			AppEvent.send(event, user.getEmail(), AppEvent.TYPE_USER_UPDATE_PRIVACY);
 		} else {
 			logger.debug("updateNotificationView() > Called for guest..."); 
 			returnOk(event, "user.notificaiton.update");
