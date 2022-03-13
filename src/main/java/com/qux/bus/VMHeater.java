@@ -47,19 +47,23 @@ public class VMHeater extends AbstractVerticle implements Handler<Long> {
 	 * @param start
 	 */
 	private void touchMongo(long start) {
-		client.count(DB.getTable(App.class),App.findByIds(), res ->{			
-			if(res.succeeded()){
-				client.find(DB.getTable(App.class),App.findPublic(), res2 ->{		
-					if(res2.succeeded()){
-						touchCPU(start);
-					} else {
-						this.logger.error("touchMongo() > error");
-					}					
-				});
-			} else {
-				this.logger.error("touchMongo() > error");
-			}		
-		});
+		try {
+			client.count(DB.getTable(App.class), App.findByIds(), res -> {
+				if (res.succeeded()) {
+					client.find(DB.getTable(App.class), App.findPublic(), res2 -> {
+						if (res2.succeeded()) {
+							touchCPU(start);
+						} else {
+							this.logger.error("touchMongo() > error finding public apps", res2.cause());
+						}
+					});
+				} else {
+					this.logger.error("touchMongo() > error > Count tables", res.cause());
+				}
+			});
+		} catch (Exception es) {
+			this.logger.error("touchMongo() > error > Something went wrong", es);
+		}
 	}
 
 	/**
