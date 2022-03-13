@@ -1,6 +1,6 @@
 FROM openjdk:19-jdk-bullseye
 
-RUN mkdir -p /usr/src
+RUN mkdir -p /usr/src/qux-java
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
@@ -8,7 +8,7 @@ ENV TZ=America/Chicago
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-WORKDIR /usr/src
+WORKDIR /usr/src/qux-java
 
 ## Set ENV vars here
 ENV QUX_HTTP_HOST=quant.example.com \
@@ -28,16 +28,14 @@ ENV QUX_HTTP_HOST=quant.example.com \
     QUX_KEY_CLOAK_CLAIM_ROLE=role \
     QUX_KEY_CLOAK_ISSUER=qux \
     QUX_KEY_CLOAK_CLAIM_ID=id \
-    QUX_KEY_CLOAK_CLAIM_EMAIL=email \
+    QUX_KEY_CLOAK_CLAIM_EMAIL=email
     QUX_KEY_CLOAK_CLAIM_NAME=name \
     QUX_KEY_CLOAK_CLAIM_LASTNAME=lastname
 
 ## Clone Quant-ux backend repo with pre-built java backend
 RUN git clone https://github.com/KlausSchaefers/qux-java.git
 
-WORKDIR /usr/src/qux-java
-
-# run mvn -DskipTests=true package
+#run mvn -DskipTests=true  package
 
 ## Run the java backend with this
 CMD [ "java", "-jar",  "qux-java/release/qux-server.jar", "-Xmx2g", "-conf", "qux-java/matc.conf", "-instances 1" ]
