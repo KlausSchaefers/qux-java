@@ -56,7 +56,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.52";
+	public static final String VERSION = "4.0.53";
 
 	private MongoClient client;
 	
