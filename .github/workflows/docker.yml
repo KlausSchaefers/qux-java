@@ -1,11 +1,8 @@
-# This is a basic workflow to help you get started with Actions
 name: Docker Image Build and Push to Dockerhub - CI/CD
 
 on: 
-  workflow_dispatch:
   push:
-    branches [master]
-  
+    branches: [ master ]
 
 jobs:
 
