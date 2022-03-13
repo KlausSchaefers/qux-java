@@ -56,7 +56,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.51";
+	public static final String VERSION = "4.0.52";
 
 	private MongoClient client;
 	
@@ -118,9 +118,9 @@ public class MATC extends AbstractVerticle {
 			.listen(config.getInteger("http.port"));
 		
 		
-		logger.error("******************************");
-		logger.error("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
-		logger.error("******************************");
+		System.out.println("******************************************");
+		System.out.println("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
+		System.out.println("******************************************");
 	}
 
 	private IBlobService getBlockService(String folder, JsonObject config) {
@@ -423,7 +423,8 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.GET, "/rest/user/notification/last.json").handler(user::getNotificationView);
 		router.route(HttpMethod.POST, "/rest/user/privacy/update.json").handler(user::updatePrivacy);
 
-		// FIXME: this makes only sense, if we do not use key cloack
+		router.route(HttpMethod.POST, "/rest/user/external").handler(user::createExternalIfNotExists);
+
 		PasswordRest pass = new PasswordRest(this.tokenService, client);
 		router.route(HttpMethod.POST, "/rest/user/password/request").handler(pass.resetPassword());
 		router.route(HttpMethod.POST, "/rest/user/password/set").handler(pass.setPassword());

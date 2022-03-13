@@ -41,12 +41,13 @@ public class KeyCloakTokenService implements ITokenService{
         logger.info("getKeys() > enter()");
         try {
             String url = String.format("%s/auth/realms/%s/protocol/openid-connect/certs", keycloakServer, keycloakRealm);
-            System.out.println(url);
             UrlJwkProvider provider = new UrlJwkProvider(new URL(url), 5000, 5000);
+            logger.info("Load keys from " + url);
             List<Jwk> all = provider.getAll();
             this.setKeys(all);
         } catch (Exception e) {
-            logger.info("getKeys() > Error ()", e);
+            logger.error("loadKeys() > Cannot get keys ()", e);
+            throw new RuntimeException();
         }
     }
 
@@ -65,6 +66,7 @@ public class KeyCloakTokenService implements ITokenService{
             this.keys.put(key.getId(), key);
         }
         this.keyProvider = new JWKKeyProvider(this.keys);
+        logger.info("setKeys() > exit");
     }
 
     @Override
@@ -97,11 +99,11 @@ public class KeyCloakTokenService implements ITokenService{
                     .build();
             DecodedJWT jwt = verifier.verify(token);
 
-            String email = jwt.getClaim(this.config.getClaimEmail()).asString();
-            String id = jwt.getClaim(this.config.getClaimId()).asString();
-            String role = jwt.getClaim(this.config.getClaimRole()).asString();
-            String name = jwt.getClaim(this.config.getClaimName()).asString();
-            String lastname = jwt.getClaim(this.config.getClaimLastName()).asString();
+            String id = jwt.getSubject();
+            String email = this.config.getClaimEmail() != "" ?  jwt.getClaim(this.config.getClaimEmail()).asString() : jwt.getSubject();
+            String role = User.USER;
+            String name = this.config.getClaimName() != "" ?  jwt.getClaim(this.config.getClaimName()).asString() : "KeyCloakUser";
+            String lastname = this.config.getClaimLastName() != "" ?  jwt.getClaim(this.config.getClaimLastName()).asString() : "KeyCloakUser";
 
             User user = new User(id, name, lastname, email, role);
             return user;

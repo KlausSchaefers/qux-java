@@ -178,6 +178,85 @@ public class UserREST extends MongoREST {
 		});
 	}
 
+	public void createExternalIfNotExists(RoutingContext event) {
+		logger.info("createExternalIfNotExists() > ");
+
+		JsonObject json = event.getBodyAsJson();
+		if (!json.containsKey("id")) {
+			logger.error("createExternalIfNotExists() > No id");
+			returnError(event, 400);
+		}
+		if (!json.containsKey("email")) {
+			logger.error("createExternalIfNotExists() > No email");
+			returnError(event, 400);
+		}
+		if (!json.containsKey("name")) {
+			logger.error("createExternalIfNotExists() > No name");
+			returnError(event, 400);
+		}
+
+		String id = json.getString("id");
+		this.mongo.findOne(this.table, User.findById(id), null, res -> {
+			if (res.succeeded()) {
+				JsonObject result = res.result();
+				if (result != null) {
+					logger.info("createExternalIfNotExists() > Found user");
+					result.put("id", id);
+					result.remove("_id");
+					cleanJson(result);
+					returnJson(event, result);
+				} else {
+					logger.info("createExternalIfNotExists() > Create user");
+					insertExternal(event, json, id);
+				}
+			} else {
+				returnError(event, 401);
+			}
+		});
+	}
+
+	private void insertExternal(RoutingContext event, JsonObject json, String id) {
+		logger.info("insertExternal() > Create user : " + id);
+
+		json.remove("id");
+		json.put("_id", id);
+
+		json.put("external", true);
+		json.put("created", System.currentTimeMillis());
+		json.put("lastUpdate", System.currentTimeMillis());
+		json.put("email", json.getString("email").toLowerCase());
+		json.put("external", true);
+		json.put("role", User.USER);
+		json.put("plan", "Free");
+		json.put("newsletter", false);
+		json.put("lastNotification", 0);
+		json.put("password", Util.getRandomString());
+		json.put("acceptedTOS", System.currentTimeMillis());
+		json.put("acceptedPrivacy", System.currentTimeMillis());
+		json.put("acceptedGDPR", true);
+
+		this.mongo.insert(this.table, json, res -> {
+
+			if (res.succeeded()) {
+				this.logger.error("insertExternal() > Created user");
+
+				json.put("id", id);
+				cleanJson(json);
+				returnJson(event, json);
+
+				Mail.to(json.getString("email"))
+						.subject("Welcome to Quant-UX")
+						.payload(new JsonObject())
+						.template(MailHandler.TEMPLATE_USER_CREATED)
+						.send(event);
+
+			} else {
+				this.logger.error("insertExternal() > could not save user", res.cause());
+				returnError(event, 401);
+			}
+		});
+	}
+
 	protected void create(RoutingContext event, JsonObject json) {
 		json.put("created", System.currentTimeMillis());
 		json.put("lastUpdate", System.currentTimeMillis());

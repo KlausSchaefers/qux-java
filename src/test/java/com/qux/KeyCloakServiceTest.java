@@ -21,10 +21,10 @@ import java.nio.file.Paths;
 import java.security.interfaces.RSAPublicKey;
 import java.util.concurrent.CountDownLatch;
 
-@RunWith(VertxUnitRunner.class)
+//@RunWith(VertxUnitRunner.class)
 public class KeyCloakServiceTest extends MatcTestCase{
 
-    @Test
+    //@Test
     public void testGetKeys(TestContext context) {
         System.out.println("KeyCloakServiceTest.testGetKeys() > enter");
 
@@ -43,14 +43,6 @@ public class KeyCloakServiceTest extends MatcTestCase{
         System.out.println("KeyCloakServiceTest.testGetKeys() > exit");
     }
 
-    @Test
-    public void testKeyProvider(TestContext context) throws InterruptedException {
-        System.out.println("KeyCloakServiceTest.testKeyProvider() > enter");
-        cleanUp();
-
-
-        System.out.println("KeyCloakServiceTest.testKeyProvider() > exit");
-    }
 
 
 

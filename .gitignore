@@ -6,4 +6,4 @@
 /test/user
 .idea
 matc.iml
-/barista.conf
+/matc_keycloak.conf
