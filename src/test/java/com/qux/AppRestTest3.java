@@ -101,26 +101,7 @@ public class AppRestTest3 extends MatcTestCase {
 	}
 	
 	
-	public void assertJsonPath(JsonObject object, String path, TestContext  context){
-		JsonPath jp = new JsonPath(object);
-		Object obs = jp.getValue(path);
-		context.assertNotNull(obs, "Path '" + path + "' could not be macthed" );
-	}
-	
-	public void assertJsonPathNull(JsonObject object, String path, TestContext  context){
-		JsonPath jp = new JsonPath(object);
-		Object obs = jp.getValue(path);
-		context.assertNull(obs, "Path '" + path + "' could be macthed" );
-	}
-	
-	
-	public void assertJsonPath(JsonObject object, String path, int exp, TestContext  context){
-		
-		JsonPath jp = new JsonPath(object);
-		
-		int obs = jp.getInteger(path);
-		context.assertEquals(exp,obs, "Path '" + path + "' could not be macthed" );
-	}
+
 
 	@Test
 	public void testChanges(TestContext context){
@@ -208,48 +189,5 @@ public class AppRestTest3 extends MatcTestCase {
 	}
 
 
-	private JsonObject postChanges(App app, JsonArray changes, TestContext context) {
-	
-		JsonObject result = post("/rest/apps/" +app.getId() + "/update", changes);		
-		context.assertTrue(!result.containsKey("error"), "Error contained");
-		context.assertEquals("app.changes.succcess", result.getString("details"));
-		
-		JsonObject updateApp = client.findOne(app_db, App.findById(app.getId()));
-		
-		debug("postChanges", result.encode());
-		log("postChanges", "App : " + updateApp.encodePrettily());
-		
-		return updateApp;
-	}
-	
-	
-	public JsonObject createChange(String type,String name, JsonObject newValue){
-		return new JsonObject()
-			.put("type", type)
-			.put("name", name)
-			.put("object", newValue);
-	}
-	
-	public JsonObject createChange(String type,String name, JsonObject newValue,  String parent){
-		return new JsonObject()
-			.put("type", type)
-			.put("parent", parent)
-			.put("name", name)
-			.put("object", newValue);
-	}
 
-	public JsonObject createChange(String type, String name,String newValue){
-		return new JsonObject()
-			.put("type", type)
-			.put("name", name)
-			.put("object", newValue);
-	}
-	
-	
-	public JsonObject createChange(String type, String name,int newValue){
-		return new JsonObject()
-			.put("type", type)
-			.put("name", name)
-			.put("object", newValue);
-	}
 }

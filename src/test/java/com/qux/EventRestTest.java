@@ -45,7 +45,35 @@ public class EventRestTest extends MatcTestCase {
 		
 		log("testParseQuery", "exit");
 	}
-	
+
+
+	@Test
+	public void testExclude(TestContext context){
+		log("testExclude", "enter");
+		cleanUp();
+		deploy(new MATC(), context);
+
+		/**
+		 * create user & app
+		 */
+		postUser("klaus", context);
+		assertLogin(context, "klaus@quant-ux.de", "123456789");
+		App klaus_app_public = postApp("klaus_app_public", true, context);
+
+		/**
+		 * add events
+		 */
+		for (int i=0; i< 100; i++) {
+			postEvent(klaus_app_public, "session"+i, "Click", context);
+			postEvent(klaus_app_public, "session"+i, "Animation", context);
+		}
+		assertList("/rest/events/" + klaus_app_public.getId() +".json", 200, context);
+		assertList("/rest/events/" + klaus_app_public.getId() +".json?exclude=Animation", 100, context);
+		JsonObject count = this.get("/rest/events/" + klaus_app_public.getId() +"/all/count.json?exclude=Animation");
+		context.assertEquals(100, count.getInteger("count"));
+
+		log("testExclude", "exit");
+	}
 	
 	@Test
 	public void testBatch(TestContext context){

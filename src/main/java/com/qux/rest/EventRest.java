@@ -50,7 +50,8 @@ public class EventRest extends MongoREST {
 		String queryString = event.request().query();
 		Map<String, String> map = parseQuery(queryString);
 		if(map.containsKey(EXCLUDE)){
-		
+		    // "$ne" is resulting in slow mongo queries.
+			// we should turn this around.
 			String excludedType = map.get(EXCLUDE);
 			query.put("type", new JsonObject().put("$ne", excludedType));
 		}

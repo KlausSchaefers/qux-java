@@ -99,8 +99,11 @@ Start the `mongo` shell and run the following commands to set the correct mongo 
 
 use MATC
 db.app.createIndex({"isPublic":1})
+db.app.createIndex({"isDirty":1})
+
 db.event.createIndex({"appID":1, "type":1})
 db.event.createIndex({"appID":1})
+
 db.mouse.createIndex({"appID":1})
 db.team.createIndex({"userID": 1})
 db.team.createIndex({"appID":1})
@@ -108,12 +111,15 @@ db.image.createIndex({"appID":1})
 db.team.createIndex({"userID": 1, "appID":1,"permission":1 })
 db.content.createIndex({key:1})
 db.appevent.createIndex({"created":1})
+
 db.invitation.createIndex({"hash": 1})
 db.invitation.createIndex({"appID":1})
 db.commandstack.createIndex({"appID":1})
 db.comment.createIndex({"appID":1})
 db.testsetting.createIndex({"appID":1})
 db.user.createIndex({"email":1})
+
+db.performanceevent.createIndex({"created":1})
 ```
 
 ## Deveoptment
