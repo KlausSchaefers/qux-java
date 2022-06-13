@@ -35,7 +35,9 @@ the passwords the same. If you keep the password blank, a random password is gen
   "auth.keycloak.claim.lastname": "",
   "auth.keycloak.claim.name": "",  
   "auth.keycloak.claim.id": "",
-  "auth.keycloak.claim.email": "",  
+  "auth.keycloak.claim.email": "", 
+  "user.allowSignUp": true,
+  "user.allowedDomains": "*"
 }
 ```
 
@@ -68,7 +70,6 @@ to the JSON definitions.
 
     QUX_IMAGE_FOLDER_APPS
     
-    
     QUX_AUTH_SERVICE
 
     QUX_KEYCLOAK_REALM
@@ -86,10 +87,21 @@ to the JSON definitions.
     QUX_KEY_CLOAK_CLAIM_NAME
 
     QUX_KEY_CLOAK_CLAIM_LASTNAME
+    
+    QUX_USER_ALLOW_SIGNUP
+    
+    QUX_USER_ALLOWED_DOMAINS
 
 ```
 
 Please note that we have replaced the old config of nested objects with a straight dot notation. 
+
+### Privat deployments
+
+You can limit the domains from which user can sign up by setting the 'user.allowedDomains' 
+parameter in the config file, or by setting the ENV variable 'QUX_USER_ALLOWED_DOMAINS'. The value
+must be a comma separated list of domains, e.g. 'my-server.com,your-host.com'. Please be aware of <SPACES>. Sub-domains
+will be allowed.
 
 
 ## Mongo optimization
