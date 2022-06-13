@@ -1,0 +1,8 @@
+Hello,
+
+thank you for registering at Quant-UX. You can now login at {{{quxServerHost}}}
+
+
+Best Regards,
+
+Your Quant-UX Team

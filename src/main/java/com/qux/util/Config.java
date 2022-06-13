@@ -51,7 +51,9 @@ public class Config {
 
     public static final String ENV_KEY_CLOAK_CLAIM_LASTNAME = "QUX_KEY_CLOAK_CLAIM_LASTNAME";
 
+    public static final String ENV_USER_ALLOW_SIGNUP = "QUX_USER_ALLOW_SIGNUP";
 
+    public static final String ENV_USER_ALLOWED_DOMAINS = "QUX_USER_ALLOWED_DOMAINS";
 
 
     public static final String HTTP_HOST = "http.host";
@@ -69,6 +71,9 @@ public class Config {
     public static final String MAIl_PASSWORD = "mail.password";
 
     public static final String MAIL_HOST = "mail.host";
+
+    public static final String MAIL_DEBUG = "mail.debug";
+
 
     public static final String JWT_PASSWORD = "jwt.password";
 
@@ -94,6 +99,9 @@ public class Config {
 
     public static final String KEY_CLOAK_CLIENT_CLAIM_NAME = "auth.keycloak.claim.name";
 
+    public static final String USER_ALLOW_SIGNUP = "user.allowSignUp";
+
+    public static final String USER_ALLOWED_DOMAINS = "user.allowedDomains";
 
 
 
@@ -111,7 +119,8 @@ public class Config {
             mailConfig = new JsonObject()
                     .put("user", config.getString(MAIl_USER))
                     .put("password", config.getString(MAIl_PASSWORD))
-                    .put("host", config.getString(MAIL_HOST));
+                    .put("host", config.getString(MAIL_HOST))
+                    .put("debug", config.containsKey(MAIL_DEBUG));
         }
         return mailConfig;
     }
@@ -135,6 +144,14 @@ public class Config {
         return config.getString(HTTP_HOST);
     }
 
+    public static String getUserAllowedDomains(JsonObject config) {
+        return config.getString(USER_ALLOWED_DOMAINS);
+    }
+
+    public static boolean getUserSignUpAllowed(JsonObject config) {
+        return config.getBoolean(USER_ALLOW_SIGNUP);
+    }
+
     public static JsonObject getMongo(JsonObject config) {
         JsonObject mongoConfig = config.getJsonObject("mongo");
         if (mongoConfig == null) {
@@ -150,6 +167,12 @@ public class Config {
         JsonObject result = config.copy();
         if (!result.containsKey(HTTP_HOST)) {
             result.put(HTTP_HOST, "https://quant-ux.com");
+        }
+        if(!result.containsKey(USER_ALLOW_SIGNUP)) {
+            result.put(USER_ALLOW_SIGNUP, true);
+        }
+        if(!result.containsKey(USER_ALLOWED_DOMAINS)) {
+            result.put(USER_ALLOWED_DOMAINS, "*");
         }
         return result;
     }
@@ -168,8 +191,21 @@ public class Config {
         mergeHTTP(env, result);
         mergeMongo(env, result);
         mergeImage(env, result);
+        mergeUser(env, result);
         return result;
     }
+
+    private static void mergeUser(Map<String, String> env, JsonObject result) {
+        if (env.containsKey(ENV_USER_ALLOWED_DOMAINS)) {
+            logger.warn("mergeEncIntoConfig() > " + ENV_USER_ALLOWED_DOMAINS);
+            result.put(USER_ALLOWED_DOMAINS, env.get(ENV_USER_ALLOWED_DOMAINS));
+        }
+        if (env.containsKey(ENV_USER_ALLOW_SIGNUP)) {
+            logger.error("mergeEncIntoConfig() > " + ENV_USER_ALLOW_SIGNUP + " > " + env.get(ENV_USER_ALLOW_SIGNUP));
+            result.put(USER_ALLOW_SIGNUP, !"false".equals(env.get(ENV_USER_ALLOW_SIGNUP)));
+        }
+    }
+
 
     private static void mergeImage(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_IMAGE_FOLDER_USER)) {
@@ -284,6 +320,5 @@ public class Config {
             result.put(KEY_CLOAK_CLIENT_REALM, env.get(ENV_KEY_CLOAK_REALM));
         }
     }
-
 
 }

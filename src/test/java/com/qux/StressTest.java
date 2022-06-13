@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
-@RunWith(VertxUnitRunner.class)
+//@RunWith(VertxUnitRunner.class)
 public class StressTest extends MatcTestCase {
 
     /**
@@ -20,7 +20,7 @@ public class StressTest extends MatcTestCase {
      * @param context
      * @throws IOException
      */
-    @Test
+    //@Test
     public void test10k(TestContext context) throws IOException {
         log("test10k", "enter");
         cleanUp();

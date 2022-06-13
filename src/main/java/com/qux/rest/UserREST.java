@@ -11,6 +11,7 @@ import com.qux.bus.MailHandler;
 import com.qux.model.AppEvent;
 import com.qux.model.Team;
 import com.qux.model.User;
+import com.qux.util.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +39,35 @@ public class UserREST extends MongoREST {
 
 	private final IBlobService blobService;
 
+	private boolean allowSignUp = true;
+
+	private boolean hasCustomDomains = false;
+
+	private String[] allowedDomains = new String[0];
+
 	public UserREST(ITokenService tokenService, IBlobService blobService, MongoClient db, JsonObject conf) {
 		super(tokenService, db, User.class);
 		this.blobService = blobService;
 		this.imageSize = conf.getLong("image.size");
 		this.team_db = DB.getTable(Team.class);
+		this.initConfig(conf);
 		setACL(new UserAcl(db));
 		setValidator(new UserValidator(db));
 		setPartialUpdate(true);
+	}
+
+	private void initConfig(JsonObject conf) {
+		this.allowSignUp = Config.getUserSignUpAllowed(conf);
+		if (!this.allowSignUp) {
+			logger.error("initConfig() > No signups allowed");
+		}
+
+		String domains = Config.getUserAllowedDomains(conf);
+		if (!"*".equals(domains)) {
+			this.hasCustomDomains = true;
+			this.allowedDomains = domains.split(",");
+			logger.error("initConfig() > Limit domains to: " + domains);
+		}
 	}
 
 	public Handler<RoutingContext> current() {
@@ -258,10 +280,24 @@ public class UserREST extends MongoREST {
 	}
 
 	protected void create(RoutingContext event, JsonObject json) {
+
+		if (!this.allowSignUp) {
+			logger.error("create() > User tried to signup although not allowed");
+			returnError(event,  "user.create.nosignup");
+			return;
+		}
+
+		if (this.hasCustomDomains && this.allowedDomains.length > 0) {
+			String email = json.getString("email").toLowerCase();
+			if(!checkAllowedDomains(email)) {
+				logger.error("create() > Wrong domain", email);
+				returnError(event,  "user.create.domain");
+				return;
+			}
+		}
+
 		json.put("created", System.currentTimeMillis());
 		json.put("lastUpdate", System.currentTimeMillis());
-		
-
 		json.put("email", json.getString("email").toLowerCase());
 		json.put("password", Util.hashPassword(json.getString("password")));
 		json.put("role", User.USER);
@@ -294,7 +330,21 @@ public class UserREST extends MongoREST {
 			}
 		});
 	}
-	
+
+	private boolean checkAllowedDomains(String email) {
+		logger.info("checkAllowedDomains() > check ", email);
+		String[] parts = email.split("@");
+		if (parts.length == 2) {
+			String customDomain = parts[1];
+			for (String domain : this.allowedDomains) {
+				if (customDomain.endsWith(domain)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 
 	public void update(RoutingContext event, String id, JsonObject json) {
 

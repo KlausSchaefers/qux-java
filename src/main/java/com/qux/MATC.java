@@ -56,7 +56,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.53";
+	public static final String VERSION = "4.0.90";
 
 	private MongoClient client;
 	
@@ -238,7 +238,7 @@ public class MATC extends AbstractVerticle {
 		logger.info("createMail() > enter" + config.getString("user"));
 
 		if(this.isDebug){
-			return new DebugMailClient();
+			return new DebugMailClient(config.getBoolean("debug"));
 		} else{
 			MailConfig mailConfig = new MailConfig();
 			mailConfig.setHostname(config.getString("host"));
