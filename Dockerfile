@@ -30,12 +30,12 @@ ENV QUX_HTTP_HOST=quant.example.com \
     QUX_KEY_CLOAK_CLAIM_ID=id \
     QUX_KEY_CLOAK_CLAIM_EMAIL=email \
     QUX_KEY_CLOAK_CLAIM_NAME=name \
+    QUX_USER_ALLOW_SIGNUP=true \
+    QUX_USER_ALLOWED_DOMAINS=* \
     QUX_KEY_CLOAK_CLAIM_LASTNAME=lastname
 
 ## Clone Quant-ux backend repo with pre-built java backend
 RUN git clone https://github.com/KlausSchaefers/qux-java.git
-
-#run mvn -DskipTests=true  package
 
 ## Run the java backend with this
 CMD [ "java", "-jar",  "qux-java/release/qux-server.jar", "-Xmx2g", "-conf", "qux-java/matc.conf", "-instances 1" ]
