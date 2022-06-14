@@ -56,7 +56,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.90";
+	public static final String VERSION = "4.0.91";
 
 	private MongoClient client;
 	
@@ -119,7 +119,7 @@ public class MATC extends AbstractVerticle {
 		
 		
 		System.out.println("******************************************");
-		System.out.println("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "    *");
+		System.out.println("* Quant-UX-Server " + VERSION + " launched at " + config.getInteger("http.port") + "");
 		System.out.println("******************************************");
 	}
 
