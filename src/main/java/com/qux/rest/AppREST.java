@@ -498,61 +498,7 @@ public class AppREST extends MongoREST {
 			}
 		});
 	}
-	
-	
-	/********************************************************************************************
-	 * findNotPaidKyra
-	 ********************************************************************************************/
 
-	public Handler<RoutingContext> findNotPaid() {
-		return new Handler<RoutingContext>() {
-			@Override
-			public void handle(RoutingContext event) {
-				findNotPaid(event);
-			}
-		};
-	}
-	
-	private void findNotPaid(RoutingContext event) {
-		logger.debug("findNotPaid() > exit");
-		
-		long start = System.currentTimeMillis();
-		mongo.find(table, App.findNotPaid(), res->{
-			
-			if(res.succeeded()){
-				
-				long dbDone = System.currentTimeMillis();
-				this.logMetric(this.getClass(), "findNotPaid[apps]", (dbDone-start));
-				
-				List<JsonObject> apps = res.result();
-				JsonArray result = new JsonArray();
-				for(JsonObject app : apps){
-					/**
-					 * Sometimes the app might be marked for deletion, but it is still not deleted!
-					 */
-					if (!App.isDeleted(app)){
-						/**
-						 * Filter out all not needed widgets etc to speed up loading
-						 */
-						app = this.preview.create(app);
-						app = cleanJson(app);
-						result.add(app);
-					}
-				}
-				
-				long end = System.currentTimeMillis();
-				this.logMetric(this.getClass(), "findNotPaid[preview]", (end - dbDone));
-				
-				event.response().end(result.encode());
-				
-			} else {
-				returnError(event, 404);
-			}
-		});
-		
-	}
-
-	
 	
 	/********************************************************************************************
 	 * findPublic

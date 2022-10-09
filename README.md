@@ -130,6 +130,7 @@ db.commandstack.createIndex({"appID":1})
 db.comment.createIndex({"appID":1})
 db.testsetting.createIndex({"appID":1})
 db.user.createIndex({"email":1})
+db.user.createIndex({"id":1})
 
 db.performanceevent.createIndex({"created":1})
 ```
