@@ -141,8 +141,8 @@ public class MATC extends AbstractVerticle {
 
 	private JsonObject initConfig() {
 		JsonObject config = this.getConfig();
-		if(config.containsKey("debug")){
-			this.isDebug = config.getBoolean("debug");
+		if(config.containsKey(Config.DEBUG)){
+			this.isDebug = config.getBoolean(Config.DEBUG);
 			this.logger.info("start() > isDebug : " + this.isDebug);
 		}
 
@@ -238,6 +238,7 @@ public class MATC extends AbstractVerticle {
 		logger.info("createMail() > enter" + config.getString("user"));
 
 		if(this.isDebug){
+			logger.info("createMail() > Create DebugMailClient");
 			return new DebugMailClient(config.getBoolean("debug"));
 		} else{
 			MailConfig mailConfig = new MailConfig();

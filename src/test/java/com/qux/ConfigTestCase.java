@@ -26,10 +26,13 @@ public class ConfigTestCase extends MatcTestCase {
         env.put(Config.ENV_HTTP_PORT, "8080");
         env.put(Config.ENV_USER_ALLOW_SIGNUP, "false");
         env.put(Config.ENV_USER_ALLOWED_DOMAINS, "my-server.com");
+        env.put(Config.ENV_DEBUG, "true");
 
         JsonObject mergedConfig = Config.mergeEnvIntoConfig(config, env);
         context.assertEquals("https://other.com", mergedConfig.getString(Config.HTTP_HOST) );
         context.assertEquals(8080, mergedConfig.getInteger(Config.HTTP_PORT));
+        context.assertEquals(true, mergedConfig.getBoolean(Config.DEBUG));
+
 
         context.assertEquals("my-server.com", mergedConfig.getString(Config.USER_ALLOWED_DOMAINS));
         context.assertEquals(false, mergedConfig.getBoolean(Config.USER_ALLOW_SIGNUP));

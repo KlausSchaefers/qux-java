@@ -10,6 +10,7 @@ public class Config {
 
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
+    public static final String ENV_DEBUG = "QUX_DEBUG";
 
     public static final String ENV_HTTP_HOST = "QUX_HTTP_HOST";
 
@@ -55,6 +56,7 @@ public class Config {
 
     public static final String ENV_USER_ALLOWED_DOMAINS = "QUX_USER_ALLOWED_DOMAINS";
 
+    public static final String DEBUG = "debug";
 
     public static final String HTTP_HOST = "http.host";
 
@@ -185,6 +187,7 @@ public class Config {
 
     public static JsonObject mergeEnvIntoConfig(JsonObject config, Map<String, String> env) {
         JsonObject result = config.copy();
+        mergeDebug(env, result);
         mergeAuth(env, result);
         mergeKeyCloak(env, result);
         mergeMail(env, result);
@@ -193,6 +196,13 @@ public class Config {
         mergeImage(env, result);
         mergeUser(env, result);
         return result;
+
+    }
+    private static void mergeDebug(Map<String, String> env, JsonObject result) {
+        if (env.containsKey(ENV_DEBUG)) {
+            logger.error("mergeEncIntoConfig() > " + ENV_DEBUG + " > " + env.get(ENV_DEBUG));
+            result.put(DEBUG, "true".equals(env.get(ENV_DEBUG)));
+        }
     }
 
     private static void mergeUser(Map<String, String> env, JsonObject result) {

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.qux</groupId>
 	<artifactId>server</artifactId>
-	<version>4.0.91</version>
+	<version>4.0.92</version>
 
 	<properties>
 		<vertx.version>3.9.11</vertx.version>
