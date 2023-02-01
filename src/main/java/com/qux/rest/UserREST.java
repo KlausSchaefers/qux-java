@@ -317,8 +317,7 @@ public class UserREST extends MongoREST {
 				event.response().end(json.encode());
 
 				Mail.to(json.getString("email"))
-					.bcc(MATC.ADMIN)
-					.subject("Welcome to Quant-UX.com")
+					.subject("Welcome to Quant-UX")
 					.payload(new JsonObject())
 					.template(MailHandler.TEMPLATE_USER_CREATED)
 					.send(event);

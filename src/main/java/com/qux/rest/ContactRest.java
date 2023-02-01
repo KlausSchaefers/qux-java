@@ -22,12 +22,15 @@ public class ContactRest {
 		
 			String message = json.getString("message");
 			logger.info("send() >" + message);
-			
-			Mail.to(MATC.ADMIN)
-				.subject("Contact Form")
-				.payload(json)
-				.template(MailHandler.TEMPLATE_CONTACT)
-				.send(event);
+
+			if (MATC.MAIl_USER.length() > 1) {
+				Mail.to(MATC.MAIl_USER)
+					.subject("Quant-UX - Contact Form")
+					.payload(json)
+					.template(MailHandler.TEMPLATE_CONTACT)
+					.send(event);
+			}
+
 			
 		}
 		

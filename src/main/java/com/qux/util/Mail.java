@@ -33,13 +33,16 @@ public class Mail {
 					.put("stack", "-")
 					.put("message", message)
 					.put("plugins", "-");
+
+			if (MATC.MAIl_USER.length() > 0) {
+				Mail.to(MATC.MAIl_USER)
+						.subject("Server Error")
+						.payload(json)
+						.template(MailHandler.TEMPLATE_CLIENT_ERROR)
+						.send(event);
+			}
 			
-			
-			Mail.to("klaus.schaefers@quant-ux.com")
-				.subject("Server Error")
-				.payload(json)
-				.template(MailHandler.TEMPLATE_CLIENT_ERROR)
-				.send(event);
+
 			
 		} catch(Exception e){
 			logger.error("Cannot send error mail", e);
@@ -61,13 +64,14 @@ public class Mail {
 					.put("stack", "-")
 					.put("message", message)
 					.put("plugins", "-");
-			
-			
-			Mail.to(MATC.ADMIN)
-				.subject("Server Error")
-				.payload(json)
-				.template(MailHandler.TEMPLATE_CLIENT_ERROR)
-				.send(bus);
+
+			if (MATC.MAIl_USER.length() > 0) {
+				Mail.to(MATC.MAIl_USER)
+						.subject("Server Error")
+						.payload(json)
+						.template(MailHandler.TEMPLATE_CLIENT_ERROR)
+						.send(bus);
+			}
 			
 		} catch(Exception e){
 			logger.error("Cannot send error mail", e);

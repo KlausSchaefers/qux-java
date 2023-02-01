@@ -56,7 +56,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.91";
+	public static final String VERSION = "4.0.93";
 
 	private MongoClient client;
 	
@@ -70,7 +70,8 @@ public class MATC extends AbstractVerticle {
 
 	private final String startedTime = LocalDateTime.now().toString();
 
-	public static String ADMIN = "admin@quant-ux.com";
+
+	public static String MAIl_USER = "";
 
 	private ITokenService tokenService;
 	
@@ -146,9 +147,9 @@ public class MATC extends AbstractVerticle {
 			this.logger.info("start() > isDebug : " + this.isDebug);
 		}
 
-		if (config.containsKey("admin")) {
-			this.logger.info("start() > set admin");
-			ADMIN = config.getString("admin");
+		if (config.containsKey(Config.MAIl_USER)) {
+			this.logger.info("start() > set mail user", MAIl_USER);
+			MAIl_USER = config.getString(Config.MAIl_USER);
 		}
 		return config;
 	}
