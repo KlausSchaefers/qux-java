@@ -191,8 +191,13 @@ public class MATC extends AbstractVerticle {
 	private void initQUXTokenService(JsonObject config) {
 		QUXTokenService tokenService = new QUXTokenService();
 		if (config.containsKey(Config.JWT_PASSWORD)){
-			String password = config.getString(Config.JWT_PASSWORD);
-			tokenService.setSecret(password);
+			String jwtSecret = config.getString(Config.JWT_PASSWORD);
+			if (jwtSecret.trim().length() > 0) {
+				tokenService.setSecret(jwtSecret);
+			} else {
+				logger.error("initQUXTokenService() > Password is empty");
+				tokenService.setSecret(Util.getRandomString());
+			}
 		} else {
 			tokenService.setSecret(Util.getRandomString());
 			logger.error("initQUXTokenService() > No key. Use random!");
