@@ -27,6 +27,7 @@ public class ConfigTestCase extends MatcTestCase {
         env.put(Config.ENV_USER_ALLOW_SIGNUP, "false");
         env.put(Config.ENV_USER_ALLOWED_DOMAINS, "my-server.com");
         env.put(Config.ENV_DEBUG, "true");
+        env.put(Config.ENV_MAIL_PORT, "123");
 
         JsonObject mergedConfig = Config.mergeEnvIntoConfig(config, env);
         context.assertEquals("https://other.com", mergedConfig.getString(Config.HTTP_HOST) );
@@ -39,6 +40,8 @@ public class ConfigTestCase extends MatcTestCase {
         context.assertEquals("my-server.com", Config.getUserAllowedDomains(mergedConfig));
         context.assertEquals(false, Config.getUserSignUpAllowed(mergedConfig));
 
+        context.assertEquals(123, mergedConfig.getInteger("mail.port"));
+        context.assertEquals(123, Config.getMail(mergedConfig).getInteger("port"));
 
 
         Map<String, String> env2 = new HashMap<>();

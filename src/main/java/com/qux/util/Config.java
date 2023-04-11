@@ -126,8 +126,11 @@ public class Config {
                     .put("user", config.getString(MAIl_USER))
                     .put("password", config.getString(MAIl_PASSWORD))
                     .put("host", config.getString(MAIL_HOST))
-                    .put("port", config.getString(MAIL_PORT))
                     .put("debug", config.containsKey(MAIL_DEBUG));
+
+            if (config.containsKey(MAIL_PORT)) {
+                mailConfig.put("port", config.getInteger(MAIL_PORT));
+            }
         }
         return mailConfig;
     }
@@ -292,7 +295,12 @@ public class Config {
         }
         if (env.containsKey(ENV_MAIL_PORT)) {
             logger.warn("mergeMail() > " + ENV_MAIL_PORT);
-            result.put(MAIL_PORT, env.get(ENV_MAIL_PORT));
+            try {
+                int port = Integer.parseInt(env.get(ENV_MAIL_PORT));
+                result.put(MAIL_PORT, port);
+            } catch (Exception e) {
+                logger.warn("mergeMail() > Could not parse port: " + env.get(ENV_MAIL_PORT));
+            }
         }
     }
 
