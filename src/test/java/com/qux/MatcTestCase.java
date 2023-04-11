@@ -105,6 +105,8 @@ public class MatcTestCase {
 			e.printStackTrace();
 		}
 
+		conf.put(Config.DEBUG, true);
+
 		if (conf.getInteger(Config.HTTP_PORT) != 8080) {
 			quxServerUrl = "http://localhost:" + conf.getInteger(Config.HTTP_PORT);
 		}

@@ -249,13 +249,23 @@ public class MATC extends AbstractVerticle {
 		} else{
 			MailConfig mailConfig = new MailConfig();
 			mailConfig.setHostname(config.getString("host"));
-			mailConfig.setPort(587);
+			if (config.containsKey(Config.MAIL_PORT)) {
+				logger.info("createMail() > Set port to " + config.getInteger(Config.MAIL_PORT));
+				mailConfig.setPort(config.getInteger(Config.MAIL_PORT));
+			} else {
+				mailConfig.setPort(587);
+			}
 			mailConfig.setStarttls(StartTLSOptions.REQUIRED);
 			mailConfig.setUsername(config.getString("user"));
 			mailConfig.setPassword(config.getString("password"));
 			mailConfig.setStarttls(StartTLSOptions.OPTIONAL);
 			mailConfig.setKeepAlive(false);
-			return MailClient.createShared(vertx, mailConfig,config.getString("host"));
+
+			return MailClient.createShared(
+					vertx,
+					mailConfig,
+					config.getString("host")
+			);
 		}
 	}
 
