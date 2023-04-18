@@ -31,6 +31,8 @@ public class AppEvent {
 	public static final String TYPE_USER_SIGNUP = "USER_SIGNUP";
 
 	public static final String TYPE_USER_RESET = "TYPE_USER_RESET";
+
+	public static final String TYPE_USER_CHANGE_EMAIL = "USER_CHANGE_EMAIL";
 	
 	public static final String TYPE_USER_RETIRED = "USER_RETIRED";
 	
