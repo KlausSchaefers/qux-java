@@ -250,8 +250,8 @@ public class MATC extends AbstractVerticle {
 			MailConfig mailConfig = new MailConfig();
 			mailConfig.setHostname(config.getString("host"));
 			if (config.containsKey("port")) {
-				logger.info("createMail() > Set port to " + config.getInteger(Config.MAIL_PORT));
-				mailConfig.setPort(config.getInteger(Config.MAIL_PORT));
+				logger.info("createMail() > Set port to " + config.getInteger("port"));
+				mailConfig.setPort(config.getInteger("port"));
 			} else {
 				mailConfig.setPort(587);
 			}
