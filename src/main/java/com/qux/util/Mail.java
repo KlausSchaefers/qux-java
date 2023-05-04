@@ -34,8 +34,8 @@ public class Mail {
 					.put("message", message)
 					.put("plugins", "-");
 
-			if (MATC.MAIl_USER.length() > 0) {
-				Mail.to(MATC.MAIl_USER)
+			if (MATC.MAIL_USER.length() > 0) {
+				Mail.to(MATC.MAIL_USER)
 						.subject("Server Error")
 						.payload(json)
 						.template(MailHandler.TEMPLATE_CLIENT_ERROR)
@@ -65,8 +65,8 @@ public class Mail {
 					.put("message", message)
 					.put("plugins", "-");
 
-			if (MATC.MAIl_USER.length() > 0) {
-				Mail.to(MATC.MAIl_USER)
+			if (MATC.MAIL_USER.length() > 0) {
+				Mail.to(MATC.MAIL_USER)
 						.subject("Server Error")
 						.payload(json)
 						.template(MailHandler.TEMPLATE_CLIENT_ERROR)
@@ -106,7 +106,7 @@ public class Mail {
 	}
 
 	public void send(EventBus bus){	
-		bus.send(MailHandler.MAIl_BUS_QUANT_UX, msg);	
+		bus.send(MailHandler.MAIL_BUS_QUANT_UX, msg);
 	}
 	
 	public void send(EventBus bus, String address){	
@@ -117,7 +117,7 @@ public class Mail {
 		EventBus bus = event.vertx().eventBus();
 		String app = event.request().getHeader("app");
 		logger.info("send() > " + app);
-		bus.send(MailHandler.MAIl_BUS_QUANT_UX, msg);
+		bus.send(MailHandler.MAIL_BUS_QUANT_UX, msg);
 
 	}
 	

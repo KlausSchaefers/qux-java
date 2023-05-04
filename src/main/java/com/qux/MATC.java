@@ -71,7 +71,7 @@ public class MATC extends AbstractVerticle {
 	private final String startedTime = LocalDateTime.now().toString();
 
 
-	public static String MAIl_USER = "";
+	public static String MAIL_USER = "";
 
 	private ITokenService tokenService;
 	
@@ -147,9 +147,9 @@ public class MATC extends AbstractVerticle {
 			this.logger.info("start() > isDebug : " + this.isDebug);
 		}
 
-		if (config.containsKey(Config.MAIl_USER)) {
-			this.logger.info("start() > set mail user", MAIl_USER);
-			MAIl_USER = config.getString(Config.MAIl_USER);
+		if (config.containsKey(Config.MAIL_USER)) {
+			this.logger.info("start() > set mail user", MAIL_USER);
+			MAIL_USER = config.getString(Config.MAIL_USER);
 		}
 		return config;
 	}
