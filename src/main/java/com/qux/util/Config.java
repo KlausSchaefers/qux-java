@@ -22,9 +22,9 @@ public class Config {
 
     public static final String ENV_MONGO_CONNECTION_STRING = "QUX_MONGO_CONNECTION_STRING";
 
-    public static final String ENV_MAIl_USER = "QUX_MAIL_USER";
+    public static final String ENV_MAIL_USER = "QUX_MAIL_USER";
 
-    public static final String ENV_MAIl_PASSWORD = "QUX_MAIL_PASSWORD";
+    public static final String ENV_MAIL_PASSWORD = "QUX_MAIL_PASSWORD";
 
     public static final String ENV_MAIL_HOST = "QUX_MAIL_HOST";
 
@@ -70,9 +70,9 @@ public class Config {
 
     public static final String MONGO_CONNECTION_STRING = "mongo.connection_string";
 
-    public static final String MAIl_USER = "mail.user";
+    public static final String MAIL_USER = "mail.user";
 
-    public static final String MAIl_PASSWORD = "mail.password";
+    public static final String MAIL_PASSWORD = "mail.password";
 
     public static final String MAIL_HOST = "mail.host";
 
@@ -123,8 +123,8 @@ public class Config {
         JsonObject mailConfig = config.getJsonObject("mail");
         if (mailConfig == null) {
             mailConfig = new JsonObject()
-                    .put("user", config.getString(MAIl_USER))
-                    .put("password", config.getString(MAIl_PASSWORD))
+                    .put("user", config.getString(MAIL_USER))
+                    .put("password", config.getString(MAIL_PASSWORD))
                     .put("host", config.getString(MAIL_HOST))
                     .put("debug", config.containsKey(MAIL_DEBUG));
 
@@ -285,13 +285,13 @@ public class Config {
             logger.warn("mergeMail() > " + ENV_MAIL_HOST);
             result.put(MAIL_HOST, env.get(ENV_MAIL_HOST));
         }
-        if (env.containsKey(ENV_MAIl_USER)) {
-            logger.warn("mergeMail() > " + ENV_MAIl_USER);
-            result.put(MAIl_USER, env.get(ENV_MAIl_USER));
+        if (env.containsKey(ENV_MAIL_USER)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_USER);
+            result.put(MAIL_USER, env.get(ENV_MAIL_USER));
         }
-        if (env.containsKey(ENV_MAIl_PASSWORD)) {
-            logger.warn("mergeMail() > " + ENV_MAIl_PASSWORD);
-            result.put(MAIl_PASSWORD, env.get(ENV_MAIl_PASSWORD));
+        if (env.containsKey(ENV_MAIL_PASSWORD)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_PASSWORD);
+            result.put(MAIL_PASSWORD, env.get(ENV_MAIL_PASSWORD));
         }
         if (env.containsKey(ENV_MAIL_PORT)) {
             logger.warn("mergeMail() > " + ENV_MAIL_PORT);
