@@ -29,7 +29,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 	 */
 	private static final String TEMPLATE_FOLDER = "emails/";
 
-	public static final String MAIl_BUS_QUANT_UX = "matc.mail.send.quant";
+	public static final String MAIL_BUS_QUANT_UX = "matc.mail.send.quant";
 
 	/**
 	 * Default sender
@@ -121,7 +121,7 @@ public class MailHandler implements Handler<Message<JsonObject>>{
 		});
 
 		EventBus eb = vertx.eventBus();
-		eb.consumer(MAIl_BUS_QUANT_UX, this);
+		eb.consumer(MAIL_BUS_QUANT_UX, this);
 
 		logger.info("constructor() > exit");
 	}

@@ -40,7 +40,7 @@ public class KeyCloakTokenService implements ITokenService{
     public void loadKeys(String keycloakServer, String keycloakRealm) {
         logger.info("getKeys() > enter()");
         try {
-            String url = String.format("%s/auth/realms/%s/protocol/openid-connect/certs", keycloakServer, keycloakRealm);
+            String url = String.format("%s/realms/%s/protocol/openid-connect/certs", keycloakServer, keycloakRealm);
             UrlJwkProvider provider = new UrlJwkProvider(new URL(url), 5000, 5000);
             logger.info("Load keys from " + url);
             List<Jwk> all = provider.getAll();

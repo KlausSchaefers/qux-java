@@ -18,30 +18,29 @@ the passwords the same. If you keep the password blank, a random password is gen
 {
   "debug" : false,
   "http.port" : 8080, // The server port
-  "http.host": "your.server.com" // The domain name of your server. This is important for the mail that will be send. Otherwise links will not work
+  "http.host": "your.server.com", // The domain name of your server. This is important for the mail that will be send. Otherwise links will not work
   "image.folder.user" : "test/user", // folder where user images will be stored
   "image.folder.apps" : "test/apps", // folder where app images will be stored
   "image.size" : 50000000, // max image size for uploads
   "mongo.db_name": "MATC", // mongo DB to use
-  "mongo.connection_string": "mongodb://localhost:27017" // connection string, might include password and username
+  "mongo.connection_string": "mongodb://localhost:27017", // connection string, might include password and username
   "mail.user": "", // POP user name for mail sending
   "mail.password" : "", // password or token
   "mail.host": "", // URL of mail server
+  "mail.port": 587, //  optional, port of mail server, default is 587
   "admin": "admin@quant-ux.com", // Internal mails will be send to this persons
-  "jwt.password": "test" // JWT password
-  "auth.service": "" // 'keycloak' or ''
+  "jwt.password": "test", // JWT password
+  "auth.service": "", // 'keycloak' or ''
   "auth.keycloak.server": "",
   "auth.keycloak.realm": "",
   "auth.keycloak.claim.lastname": "",
-  "auth.keycloak.claim.name": "",  
+  "auth.keycloak.claim.name": "",
   "auth.keycloak.claim.id": "",
-  "auth.keycloak.claim.email": "", 
+  "auth.keycloak.claim.email": "",
   "user.allowSignUp": true,
   "user.allowedDomains": "*"
 }
 ```
-
-
 
 You can also provide the configuration through ENV variables. The following variables are supported, and map 
 to the JSON definitions.
@@ -63,6 +62,8 @@ to the JSON definitions.
     QUX_MAIL_PASSWORD
 
     QUX_MAIL_HOST
+    
+    QUX_MAIL_PORT
 
     QUX_JWT_PASSWORD
 
@@ -96,7 +97,7 @@ to the JSON definitions.
 
 Please note that we have replaced the old config of nested objects with a straight dot notation. 
 
-### Privat deployments
+### Private deployments
 
 You can limit the domains from which user can sign up by setting the 'user.allowedDomains' 
 parameter in the config file, or by setting the ENV variable 'QUX_USER_ALLOWED_DOMAINS'. The value
@@ -134,7 +135,7 @@ db.user.createIndex({"id":1})
 
 ```
 
-## Deveoptment
+## Development
 
 You might need a mongo server. The simplest way is to use Docker.
 

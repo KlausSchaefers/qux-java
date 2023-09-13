@@ -304,6 +304,63 @@ public class UserRESTTestCase extends MatcTestCase {
 		log("test", "exit");
 	}
 
+
+	@Test
+	public void testChangeEmail(TestContext context){
+		log("testDefaultUser", "enter");
+
+		cleanUp();
+
+		deploy(new MATC(), context);
+
+		User klaus = postUser("klaus", context);
+		assertLogin(context, "klaus@quant-ux.de", "123456789");
+
+		JsonObject partial = new JsonObject().put("email", "klaus.new@quant-ux.de");
+		this.post("/rest/user/"  + klaus.getId() + ".json", partial);
+
+		JsonObject loadedUser = get("/rest/user/"  + klaus.getId() + ".json");
+		System.out.println(loadedUser);
+		context.assertTrue(!loadedUser.containsKey("errors"));
+		context.assertTrue(loadedUser.containsKey("_id"));
+		context.assertTrue(!loadedUser.containsKey("password"));
+		context.assertEquals("klaus.new@quant-ux.de", loadedUser.getString("email"));
+
+
+		logout();
+		assertLoginError(context, "klaus@quant-ux.de", "123456789");
+		assertLogin(context, "klaus.new@quant-ux.de", "123456789");
+	}
+
+	@Test
+	public void testChangeEmail2(TestContext context){
+		log("testChangeEmail2", "enter");
+
+		cleanUp();
+
+		deploy(new MATC(), context);
+
+		User dennis = postUser("dennis", context);
+		User klaus = postUser("klaus", context);
+		assertLogin(context, "klaus@quant-ux.de", "123456789");
+
+		JsonObject partial = new JsonObject().put("email", dennis.getEmail());
+		JsonObject result = this.post("/rest/user/"  + klaus.getId() + ".json", partial);
+		context.assertTrue(result.containsKey("errors"));
+		context.assertTrue(result.getJsonArray("errors").contains("user.update.email.taken"));
+
+		System.out.println(result);
+
+		JsonObject loadedUser = get("/rest/user/"  + klaus.getId() + ".json");
+
+		context.assertTrue(!loadedUser.containsKey("errors"));
+		context.assertTrue(loadedUser.containsKey("_id"));
+		context.assertTrue(!loadedUser.containsKey("password"));
+		context.assertEquals("klaus@quant-ux.de", loadedUser.getString("email"));
+
+
+	}
+
 	
 	
 

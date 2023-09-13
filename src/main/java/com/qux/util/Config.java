@@ -22,11 +22,13 @@ public class Config {
 
     public static final String ENV_MONGO_CONNECTION_STRING = "QUX_MONGO_CONNECTION_STRING";
 
-    public static final String ENV_MAIl_USER = "QUX_MAIL_USER";
+    public static final String ENV_MAIL_USER = "QUX_MAIL_USER";
 
-    public static final String ENV_MAIl_PASSWORD = "QUX_MAIL_PASSWORD";
+    public static final String ENV_MAIL_PASSWORD = "QUX_MAIL_PASSWORD";
 
     public static final String ENV_MAIL_HOST = "QUX_MAIL_HOST";
+
+    public static final String ENV_MAIL_PORT = "QUX_MAIL_PORT";
 
     public static final String ENV_JWT_PASSWORD = "QUX_JWT_PASSWORD";
 
@@ -68,11 +70,13 @@ public class Config {
 
     public static final String MONGO_CONNECTION_STRING = "mongo.connection_string";
 
-    public static final String MAIl_USER = "mail.user";
+    public static final String MAIL_USER = "mail.user";
 
-    public static final String MAIl_PASSWORD = "mail.password";
+    public static final String MAIL_PASSWORD = "mail.password";
 
     public static final String MAIL_HOST = "mail.host";
+
+    public static final String MAIL_PORT = "mail.port";
 
     public static final String MAIL_DEBUG = "mail.debug";
 
@@ -119,10 +123,14 @@ public class Config {
         JsonObject mailConfig = config.getJsonObject("mail");
         if (mailConfig == null) {
             mailConfig = new JsonObject()
-                    .put("user", config.getString(MAIl_USER))
-                    .put("password", config.getString(MAIl_PASSWORD))
+                    .put("user", config.getString(MAIL_USER))
+                    .put("password", config.getString(MAIL_PASSWORD))
                     .put("host", config.getString(MAIL_HOST))
                     .put("debug", config.containsKey(MAIL_DEBUG));
+
+            if (config.containsKey(MAIL_PORT)) {
+                mailConfig.put("port", config.getInteger(MAIL_PORT));
+            }
         }
         return mailConfig;
     }
@@ -200,18 +208,18 @@ public class Config {
     }
     private static void mergeDebug(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_DEBUG)) {
-            logger.error("mergeEncIntoConfig() > " + ENV_DEBUG + " > " + env.get(ENV_DEBUG));
+            logger.error("mergeDebug() > " + ENV_DEBUG + " > " + env.get(ENV_DEBUG));
             result.put(DEBUG, "true".equals(env.get(ENV_DEBUG)));
         }
     }
 
     private static void mergeUser(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_USER_ALLOWED_DOMAINS)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_USER_ALLOWED_DOMAINS);
+            logger.warn("mergeUser() > " + ENV_USER_ALLOWED_DOMAINS);
             result.put(USER_ALLOWED_DOMAINS, env.get(ENV_USER_ALLOWED_DOMAINS));
         }
         if (env.containsKey(ENV_USER_ALLOW_SIGNUP)) {
-            logger.error("mergeEncIntoConfig() > " + ENV_USER_ALLOW_SIGNUP + " > " + env.get(ENV_USER_ALLOW_SIGNUP));
+            logger.error("mergeUser() > " + ENV_USER_ALLOW_SIGNUP + " > " + env.get(ENV_USER_ALLOW_SIGNUP));
             result.put(USER_ALLOW_SIGNUP, !"false".equals(env.get(ENV_USER_ALLOW_SIGNUP)));
         }
     }
@@ -219,49 +227,49 @@ public class Config {
 
     private static void mergeImage(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_IMAGE_FOLDER_USER)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_IMAGE_FOLDER_USER);
+            logger.warn("mergeImage() > " + ENV_IMAGE_FOLDER_USER);
             result.put(IMAGE_FOLDER_USER, env.get(ENV_IMAGE_FOLDER_USER));
         }
         if (env.containsKey(ENV_IMAGE_FOLDER_APPS)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_IMAGE_FOLDER_APPS);
+            logger.warn("mergeImage() > " + ENV_IMAGE_FOLDER_APPS);
             result.put(IMAGE_FOLDER_APPS, env.get(ENV_IMAGE_FOLDER_APPS));
         }
     }
 
     private static void mergeAuth(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_AUTH_SERVICE)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_AUTH_SERVICE);
+            logger.warn("mergeAuth() > " + ENV_AUTH_SERVICE);
             result.put(AUTH_SERVICE, env.get(ENV_AUTH_SERVICE));
         }
 
         if (env.containsKey(ENV_JWT_PASSWORD)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_JWT_PASSWORD);
+            logger.warn("mergeAuth() > " + ENV_JWT_PASSWORD);
             result.put(JWT_PASSWORD, env.get(ENV_JWT_PASSWORD));
         }
     }
 
     private static void mergeMongo(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_MONGO_CONNECTION_STRING)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_MONGO_CONNECTION_STRING);
+            logger.warn("mergeMongo() > " + ENV_MONGO_CONNECTION_STRING);
             result.put(MONGO_CONNECTION_STRING, env.get(ENV_MONGO_CONNECTION_STRING));
         }
         if (env.containsKey(ENV_MONGO_DB_NAME)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_MONGO_DB_NAME);
+            logger.warn("mergeMongo() > " + ENV_MONGO_DB_NAME);
             result.put(MONGO_DB_NAME, env.get(ENV_MONGO_DB_NAME));
         }
         if (env.containsKey(ENV_MONGO_TABLE_PREFIX)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_MONGO_TABLE_PREFIX);
+            logger.warn("mergeMongo() > " + ENV_MONGO_TABLE_PREFIX);
             result.put(MONGO_TABLE_PREFIX, env.get(ENV_MONGO_TABLE_PREFIX));
         }
     }
 
     private static void mergeHTTP(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_HTTP_HOST)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_HTTP_HOST);
+            logger.warn("mergeHTTP() > " + ENV_HTTP_HOST);
             result.put(HTTP_HOST, env.get(ENV_HTTP_HOST));
         }
         if (env.containsKey(ENV_HTTP_PORT)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_HTTP_PORT);
+            logger.warn("mergeHTTP() > " + ENV_HTTP_PORT);
             try {
                 String port = env.get(ENV_HTTP_PORT);
                 result.put(HTTP_PORT,Integer.parseInt(port));
@@ -274,16 +282,25 @@ public class Config {
 
     private static void mergeMail(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_MAIL_HOST)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_MAIL_HOST);
+            logger.warn("mergeMail() > " + ENV_MAIL_HOST);
             result.put(MAIL_HOST, env.get(ENV_MAIL_HOST));
         }
-        if (env.containsKey(ENV_MAIl_USER)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_MAIl_USER);
-            result.put(MAIl_USER, env.get(ENV_MAIl_USER));
+        if (env.containsKey(ENV_MAIL_USER)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_USER);
+            result.put(MAIL_USER, env.get(ENV_MAIL_USER));
         }
-        if (env.containsKey(ENV_MAIl_PASSWORD)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_MAIl_PASSWORD);
-            result.put(MAIl_PASSWORD, env.get(ENV_MAIl_PASSWORD));
+        if (env.containsKey(ENV_MAIL_PASSWORD)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_PASSWORD);
+            result.put(MAIL_PASSWORD, env.get(ENV_MAIL_PASSWORD));
+        }
+        if (env.containsKey(ENV_MAIL_PORT)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_PORT);
+            try {
+                int port = Integer.parseInt(env.get(ENV_MAIL_PORT));
+                result.put(MAIL_PORT, port);
+            } catch (Exception e) {
+                logger.warn("mergeMail() > Could not parse port: " + env.get(ENV_MAIL_PORT));
+            }
         }
     }
 
@@ -291,42 +308,42 @@ public class Config {
     private static void mergeKeyCloak(Map<String, String> env, JsonObject result) {
 
         if (env.containsKey(ENV_KEY_CLOAK_CLAIM_LASTNAME)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_LASTNAME);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_CLAIM_LASTNAME);
             result.put(KEY_CLOAK_CLIENT_CLAIM_LASTNAME, env.get(ENV_KEY_CLOAK_CLAIM_LASTNAME));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_CLAIM_NAME)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_NAME);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_CLAIM_NAME);
             result.put(KEY_CLOAK_CLIENT_CLAIM_NAME, env.get(ENV_KEY_CLOAK_CLAIM_NAME));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_CLAIM_EMAIL)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_EMAIL);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_CLAIM_EMAIL);
             result.put(KEY_CLOAK_CLIENT_CLAIM_EMAIL, env.get(ENV_KEY_CLOAK_CLAIM_EMAIL));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_CLAIM_ID)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_ID);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_CLAIM_ID);
             result.put(KEY_CLOAK_CLIENT_CLAIM_ID, env.get(ENV_KEY_CLOAK_CLAIM_ID));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_ISSUER)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_ISSUER);
+            logger.warn("v() > " + ENV_KEY_CLOAK_ISSUER);
             result.put(KEY_CLOAK_CLIENT_ISSUER, env.get(ENV_KEY_CLOAK_ISSUER));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_CLAIM_ROLE)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_CLAIM_ROLE);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_CLAIM_ROLE);
             result.put(KEY_CLOAK_CLIENT_CLAIM_ROLE, env.get(ENV_KEY_CLOAK_CLAIM_ROLE));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_SERVER)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_SERVER);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_SERVER);
             result.put(KEY_CLOAK_CLIENT_SERVER, env.get(ENV_KEY_CLOAK_SERVER));
         }
 
         if (env.containsKey(ENV_KEY_CLOAK_REALM)) {
-            logger.warn("mergeEncIntoConfig() > " + ENV_KEY_CLOAK_REALM);
+            logger.warn("mergeKeyCloak() > " + ENV_KEY_CLOAK_REALM);
             result.put(KEY_CLOAK_CLIENT_REALM, env.get(ENV_KEY_CLOAK_REALM));
         }
     }

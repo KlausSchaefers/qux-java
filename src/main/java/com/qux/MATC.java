@@ -54,7 +54,7 @@ public class MATC extends AbstractVerticle {
 	private final String startedTime = LocalDateTime.now().toString();
 
 
-	public static String MAIl_USER = "";
+	public static String MAIL_USER = "";
 
 	private ITokenService tokenService;
 	
@@ -131,9 +131,9 @@ public class MATC extends AbstractVerticle {
 			this.logger.info("start() > isDebug : " + this.isDebug);
 		}
 
-		if (config.containsKey(Config.MAIl_USER)) {
-			this.logger.info("start() > set mail user", MAIl_USER);
-			MAIl_USER = config.getString(Config.MAIl_USER);
+		if (config.containsKey(Config.MAIL_USER)) {
+			this.logger.info("start() > set mail user", MAIL_USER);
+			MAIL_USER = config.getString(Config.MAIL_USER);
 		}
 		return config;
 	}
@@ -233,13 +233,23 @@ public class MATC extends AbstractVerticle {
 		} else{
 			MailConfig mailConfig = new MailConfig();
 			mailConfig.setHostname(config.getString("host"));
-			mailConfig.setPort(587);
+			if (config.containsKey("port")) {
+				logger.info("createMail() > Set port to " + config.getInteger("port"));
+				mailConfig.setPort(config.getInteger("port"));
+			} else {
+				mailConfig.setPort(587);
+			}
 			mailConfig.setStarttls(StartTLSOptions.REQUIRED);
 			mailConfig.setUsername(config.getString("user"));
 			mailConfig.setPassword(config.getString("password"));
 			mailConfig.setStarttls(StartTLSOptions.OPTIONAL);
 			mailConfig.setKeepAlive(false);
-			return MailClient.createShared(vertx, mailConfig,config.getString("host"));
+
+			return MailClient.createShared(
+					vertx,
+					mailConfig,
+					config.getString("host")
+			);
 		}
 	}
 

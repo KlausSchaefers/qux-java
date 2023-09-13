@@ -381,9 +381,28 @@ public class UserREST extends MongoREST {
 		if(json.containsKey("has")){
 			logger.error("update() > User " + getUser(event) + " tried to set has!");
 			json.remove("has");
-		} 
+		}
 
-		super.update(event, id, json);
+		checkEmailUpdate(event, id, json);
+	}
+
+	private void checkEmailUpdate(RoutingContext event, String id, JsonObject json) {
+		if (json.containsKey("email")) {
+			logger.info("checkEmailUpdate() > User " + getUser(event) + " changed email");
+			String email = json.getString("email");
+			this.mongo.count(table, User.findByEmail(email),res-> {
+				if (res.succeeded() && res.result() == 0) {
+					logger.warn("checkEmailUpdate() > User " + getUser(event) + " changed email");
+					AppEvent.send(event, json.getString("email"), AppEvent.TYPE_USER_CHANGE_EMAIL);
+					super.update(event, id, json);
+				} else {
+					logger.warn("checkEmailUpdate() > User " + getUser(event) + " tried used mail!");
+					returnError(event, "user.update.email.taken" );
+				}
+			});
+		} else {
+			super.update(event, id, json);
+		}
 	}
 	
 	protected void afterUpdate(RoutingContext event, String id, JsonObject json) {

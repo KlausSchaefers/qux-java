@@ -23,8 +23,8 @@ public class ContactRest {
 			String message = json.getString("message");
 			logger.info("send() >" + message);
 
-			if (MATC.MAIl_USER.length() > 1) {
-				Mail.to(MATC.MAIl_USER)
+			if (MATC.MAIL_USER.length() > 1) {
+				Mail.to(MATC.MAIL_USER)
 					.subject("Quant-UX - Contact Form")
 					.payload(json)
 					.template(MailHandler.TEMPLATE_CONTACT)
