@@ -24,7 +24,7 @@ public class ImageRestTest extends MatcTestCase {
 	
 	@Test
 	public void test(TestContext context) throws InterruptedException, IOException {
-		log("test_MutliUser", "enter");
+		log("test", "enter");
 
 		cleanUp();
 

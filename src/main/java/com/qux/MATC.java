@@ -7,6 +7,7 @@ import com.qux.auth.KeyCloakTokenService;
 import com.qux.blob.FileSystemService;
 import com.qux.blob.IBlobService;
 import com.qux.blob.S3BlobService;
+import com.qux.rest.*;
 import com.qux.util.*;
 import com.qux.auth.QUXTokenService;
 import org.slf4j.Logger;
@@ -19,24 +20,6 @@ import com.qux.bus.MailHandler;
 import com.qux.bus.VMHeater;
 import com.qux.model.Annotation;
 import com.qux.model.TestSetting;
-import com.qux.rest.AppPartREST;
-import com.qux.rest.AppREST;
-import com.qux.rest.CommandStackREST;
-import com.qux.rest.CommentREST;
-import com.qux.rest.ContactRest;
-import com.qux.rest.EventRest;
-
-import com.qux.rest.ImageREST;
-import com.qux.rest.InvitationREST;
-import com.qux.rest.LibraryRest;
-import com.qux.rest.LibraryTeamRest;
-import com.qux.rest.MouseRest;
-import com.qux.rest.NotificationREST;
-import com.qux.rest.PasswordRest;
-
-import com.qux.rest.TeamREST;
-import com.qux.rest.TestSettingsRest;
-import com.qux.rest.UserREST;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -56,7 +39,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.0.93";
+	public static final String VERSION = "4.5.5";
 
 	private MongoClient client;
 	
@@ -108,6 +91,7 @@ public class MATC extends AbstractVerticle {
 		initNotification(router);
 		initLibrary(router);
 		initBus();
+		initAIProxy(router);
 
 
 		HttpServerOptions options = new HttpServerOptions()
@@ -269,9 +253,15 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.GET, "/rest/commands/:appID.json").handler(commandStack.findOrCreateByApp());
 		router.route(HttpMethod.POST, "/rest/commands/:appID.json").handler(commandStack.updateByApp());
 		router.route(HttpMethod.POST, "/rest/commands/:appID/add").handler(commandStack.add());
+		router.route(HttpMethod.DELETE, "/rest/commands/:appID/shift/:count").handler(commandStack.shift());
 		router.route(HttpMethod.DELETE, "/rest/commands/:appID/pop/:count").handler(commandStack.pop());
 		router.route(HttpMethod.POST, "/rest/commands/:appID/undo").handler(commandStack.undo());
 		router.route(HttpMethod.POST, "/rest/commands/:appID/redo").handler(commandStack.redo());
+	}
+
+	private void initAIProxy (Router router) {
+		OpenAIProxyRest proxy = new OpenAIProxyRest(this.tokenService, "api.openai.com");
+		router.route(HttpMethod.POST, "/ai/openai.json").handler(proxy::forward);
 	}
 	
 	

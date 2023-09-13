@@ -14,7 +14,6 @@ import com.qux.model.Image;
 import com.qux.model.Model;
 import com.qux.model.User;
 import com.qux.util.ImageFileUpload;
-import com.qux.util.Mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +90,6 @@ public class ImageREST extends MongoREST {
 					error("setImage", "User "+ getUser(event) + " tried to upload image to "+ event.request().path());
 					this.getACLList(user, userApps -> {
 						error("setImage", "User " + user + " can read: " + userApps);
-						Mail.error(event, "ImageRest.setImage() > User "+ getUser(event)+ " tried to CREATE without permission. User Apps: " + userApps);
 					});
 					returnError(event, 405);
 				}
@@ -155,8 +153,13 @@ public class ImageREST extends MongoREST {
 	private void addImageMetaData (RoutingContext event, List<ImageFileUpload> uploads, Handler<List<ImageFileUpload>> handler) {
 		logger.error("addImageMetaData > enter");
 		event.vertx().executeBlocking(promise -> {
-			for (ImageFileUpload file : uploads) {
-				addWidthAndHeight(file);
+			try {
+				for (ImageFileUpload file : uploads) {
+					addWidthAndHeight(file);
+				}
+			} catch (Exception err) {
+				promise.fail(err);
+				return;
 			}
 			promise.complete();
 		}, blockingResult -> {

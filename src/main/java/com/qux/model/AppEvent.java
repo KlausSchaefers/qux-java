@@ -54,6 +54,9 @@ public class AppEvent {
 	
 	public static final String TYPE_LIB_CREATE = "LIB_CREATE";
 
+	public static final String TYPE_OPEN_AI = "OPEN_AI";
+
+
 	
 	public static void send(RoutingContext event, String email, String type){
 		JsonObject appEvent =  new JsonObject()

@@ -209,7 +209,75 @@ public class CommandStackREST extends AppPartREST<CommandStack>{
 		});	
 	}
 
-	
+	/*********************************************************
+	 * Shift
+	 *********************************************************/
+
+	public Handler<RoutingContext> shift() {
+		return new Handler<RoutingContext>() {
+			@Override
+			public void handle(RoutingContext event) {
+				shift(event);
+			}
+		};
+	}
+
+	public void shift(RoutingContext event) {
+		String appID  = getId(event, "appID");
+
+		if(appID == null){
+			returnError(event, 404);
+		}
+
+		try {
+			String value = event.request().params().get("count");
+			int count = Integer.parseInt(value);
+			this.acl.canWrite(getUser(event), event, allowed -> {
+				if (allowed) {
+					shift(event, count, appID);
+				} else {
+					error("add", "User " + getUser(event) + " tried to shift ", event);
+
+					returnError(event, 401);
+				}
+			});
+		} catch (Exception err) {
+			error("add", "User " + getUser(event) + " tried to shift ", event);
+		}
+	}
+
+	private void shift(RoutingContext event, int count, String appID) {
+		mongo.findOne(table, AppPart.findByApp(appID), null, res -> {
+
+			if(res.succeeded()){
+
+				JsonObject commandStack = res.result();
+				final JsonArray stack = commandStack.getJsonArray("stack");
+				final int pos = commandStack.getInteger("pos") ;
+				final int newPos = Math.max(0, pos - count);
+				final int max = Math.min(count, stack.size());
+
+				for(int i=0; i< max; i++){
+					stack.remove(0);
+				}
+				commandStack.put("pos", newPos);
+
+				mongo.save(table, commandStack, res2 -> {
+					if(res2.succeeded()){
+						returnJson(event, commandStack);;
+					} else {
+						res2.cause().printStackTrace();
+						returnError(event, "stack.update.error");
+					}
+				});
+
+			} else {
+				returnError(event, 404);
+			}
+		});
+	}
+
+
 	/*********************************************************
 	 * Add
 	 *********************************************************/

@@ -101,6 +101,7 @@ public class MatcTestCase {
 			conf.put("mongo.table_prefix", "test");
 			conf.put("image.folder.apps", "test/apps");
 			conf.put("image.folder.user", "test/user");
+			conf.put(Config.DEBUG, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -1356,4 +1357,36 @@ public class MatcTestCase {
 		context.assertEquals(exp,obs, "Path '" + path + "' could not be macthed" );
 	}
 
+	public JsonObject popStack(App app, int count, int expectedPos, int extpectedLength, TestContext context){
+
+
+		JsonObject result = delete("/rest/commands/" +app.getId()+"/pop/" + count);
+
+		log("removeCommand", "result > " + result.encode());
+		context.assertTrue(!result.containsKey("errors"));
+		context.assertEquals(expectedPos, result.getInteger("pos"));
+
+		JsonObject stack = get("/rest/commands/" + app.getId() + ".json");
+		log("removeCommand", "stack > "+  stack.encodePrettily());
+		context.assertEquals(expectedPos, stack.getInteger("pos"));
+		context.assertEquals(extpectedLength, stack.getJsonArray("stack").size(), "Expectd stack length");
+
+
+		return result;
+	}
+
+	public void assertStackOrder(JsonObject stack, int min, int distance, TestContext context) {
+
+		JsonArray commands = stack.getJsonArray("stack");
+		int lastId = min;
+		for (int i=0; i < commands.size(); i++) {
+			JsonObject c = commands.getJsonObject(i);
+			int id = c.getInteger("id");
+			//System.out.println(i + "> " +id + " : " +lastId);
+			context.assertTrue(id >= min);
+			context.assertTrue(id - lastId == distance);
+			context.assertTrue(lastId < id);
+			lastId = id;
+		}
+	}
 }
