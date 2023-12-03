@@ -141,6 +141,10 @@ public class Config {
             if (config.containsKey(MAIL_PORT)) {
                 mailConfig.put("port", config.getInteger(MAIL_PORT));
             }
+
+            if (config.containsKey(MAIL_SSL)) {
+                mailConfig.put("ssl", config.getString(MAIL_SSL));
+            }
         }
         return mailConfig;
     }
@@ -373,15 +377,15 @@ public class Config {
 
 
     public static boolean isMailSSLOptional(JsonObject config) {
-        if (config.containsKey(MAIL_SSL)) {
-            return MAIl_SSL_CONFIG.Optional.name().equals(config.getString(MAIL_SSL));
+        if (config.containsKey("ssl")) {
+            return MAIl_SSL_CONFIG.Optional.name().equalsIgnoreCase(config.getString("ssl"));
         }
         return false;
     }
 
     public static boolean isMailSSLDisabled(JsonObject config) {
-        if (config.containsKey(MAIL_SSL)) {
-            return MAIl_SSL_CONFIG.Disabled.name().equals(config.getString(MAIL_SSL));
+        if (config.containsKey("ssl")) {
+            return MAIl_SSL_CONFIG.Disabled.name().equalsIgnoreCase(config.getString("ssl"));
         }
         return false;
     }

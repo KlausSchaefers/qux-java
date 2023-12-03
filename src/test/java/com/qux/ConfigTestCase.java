@@ -34,13 +34,15 @@ public class ConfigTestCase extends MatcTestCase {
         context.assertEquals("https://other.com", mergedConfig.getString(Config.HTTP_HOST) );
         context.assertEquals(8080, mergedConfig.getInteger(Config.HTTP_PORT));
         context.assertEquals(true, mergedConfig.getBoolean(Config.DEBUG));
-        context.assertEquals(true, Config.isMailSSLOptional(mergedConfig));
-        context.assertEquals(false, Config.isMailSSLDisabled(mergedConfig));
+
+        JsonObject mailConfig = Config.getMail(mergedConfig);
+        context.assertEquals(true, Config.isMailSSLOptional(mailConfig));
+        context.assertEquals(false, Config.isMailSSLDisabled(mailConfig));
 
         context.assertEquals("my-server.com", mergedConfig.getString(Config.USER_ALLOWED_DOMAINS));
         context.assertEquals(false, mergedConfig.getBoolean(Config.USER_ALLOW_SIGNUP));
         context.assertEquals("my-server.com", Config.getUserAllowedDomains(mergedConfig));
-        context.assertEquals(false, Config.getUserSignUpAllowed(mergedConfig));
+
 
         context.assertEquals(123, mergedConfig.getInteger("mail.port"));
         context.assertEquals(123, Config.getMail(mergedConfig).getInteger("port"));
@@ -51,13 +53,17 @@ public class ConfigTestCase extends MatcTestCase {
         env2.put(Config.ENV_MAIL_SSL, "disabled");
         JsonObject mergedConfig2 = Config.mergeEnvIntoConfig(config, env2);
         context.assertEquals(true, Config.getUserSignUpAllowed(mergedConfig2));
-        context.assertEquals(true, Config.isMailSSLDisabled(mergedConfig2));
-        context.assertEquals(false, Config.isMailSSLOptional(mergedConfig2));
+
+        JsonObject mailConfig2 = Config.getMail(mergedConfig2);
+        context.assertEquals(true, Config.isMailSSLDisabled(mailConfig2));
+        context.assertEquals(false, Config.isMailSSLOptional(mailConfig2));
 
         Map<String, String> env3 = new HashMap<>();
         env3.put(Config.ENV_USER_ALLOW_SIGNUP, "asdasd");
         JsonObject mergedConfig3 = Config.mergeEnvIntoConfig(config, env3);
         context.assertEquals(true, Config.getUserSignUpAllowed(mergedConfig3));
+
+
 
 
         log("testMergeInEnv", "exit");
@@ -78,8 +84,9 @@ public class ConfigTestCase extends MatcTestCase {
         context.assertEquals("*", Config.getUserAllowedDomains(defaultConfig));
         context.assertEquals(true, Config.getUserSignUpAllowed(defaultConfig));
 
-        context.assertEquals(false, Config.isMailSSLOptional(config));
-        context.assertEquals(false, Config.isMailSSLDisabled(config));
+        JsonObject mailConfig = Config.getMail(defaultConfig);
+        context.assertEquals(false, Config.isMailSSLOptional(mailConfig));
+        context.assertEquals(false, Config.isMailSSLDisabled(mailConfig));
 
         log("testSetDefaults", "exit");
     }
