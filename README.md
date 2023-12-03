@@ -66,6 +66,8 @@ to the JSON definitions.
     
     QUX_MAIL_PORT
 
+    QUX_MAIL_SSL
+    
     QUX_JWT_PASSWORD
 
     QUX_IMAGE_FOLDER_USER
