@@ -8,6 +8,12 @@ import org.slf4j.LoggerFactory;
 
 public class Config {
 
+    enum MAIl_SSL_CONFIG {
+        Optional,
+        Disabled,
+        Required
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     public static final String ENV_DEBUG = "QUX_DEBUG";
@@ -29,6 +35,8 @@ public class Config {
     public static final String ENV_MAIL_HOST = "QUX_MAIL_HOST";
 
     public static final String ENV_MAIL_PORT = "QUX_MAIL_PORT";
+
+    public static final String ENV_MAIL_SSL = "QUX_MAIL_SSL";
 
     public static final String ENV_JWT_PASSWORD = "QUX_JWT_PASSWORD";
 
@@ -79,6 +87,8 @@ public class Config {
     public static final String MAIL_PORT = "mail.port";
 
     public static final String MAIL_DEBUG = "mail.debug";
+
+    public static final String MAIL_SSL = "mail.ssl";
 
 
     public static final String JWT_PASSWORD = "jwt.password";
@@ -302,6 +312,19 @@ public class Config {
                 logger.warn("mergeMail() > Could not parse port: " + env.get(ENV_MAIL_PORT));
             }
         }
+        if (env.containsKey(ENV_MAIL_SSL)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_SSL);
+            String value = env.get(ENV_MAIL_SSL);
+            if (!"required".equalsIgnoreCase(value)) {
+                if ("optional".equalsIgnoreCase(value)) {
+                    result.put(MAIL_SSL, MAIl_SSL_CONFIG.Optional.name());
+                } else if ("disabled".equalsIgnoreCase(value)) {
+                    result.put(MAIL_SSL, MAIl_SSL_CONFIG.Disabled.name());
+                } else {
+                    logger.error("mergeMail() > Use 'required','optional' or 'disabled' " + ENV_MAIL_SSL);
+                }
+            }
+        }
     }
 
 
@@ -348,4 +371,18 @@ public class Config {
         }
     }
 
+
+    public static boolean isMailSSLOptional(JsonObject config) {
+        if (config.containsKey(MAIL_SSL)) {
+            return MAIl_SSL_CONFIG.Optional.name().equals(config.getString(MAIL_SSL));
+        }
+        return false;
+    }
+
+    public static boolean isMailSSLDisabled(JsonObject config) {
+        if (config.containsKey(MAIL_SSL)) {
+            return MAIl_SSL_CONFIG.Disabled.name().equals(config.getString(MAIL_SSL));
+        }
+        return false;
+    }
 }

@@ -39,7 +39,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "4.5.5";
+	public static final String VERSION = "4.5.6";
 
 	private MongoClient client;
 	
@@ -239,10 +239,19 @@ public class MATC extends AbstractVerticle {
 			} else {
 				mailConfig.setPort(587);
 			}
-			mailConfig.setStarttls(StartTLSOptions.REQUIRED);
+
+			if (Config.isMailSSLOptional(config)) {
+				logger.error("createMail() > DISABLE MAIL SSL!");
+				mailConfig.setStarttls(StartTLSOptions.OPTIONAL);
+			} else if (Config.isMailSSLDisabled(config)) {
+				logger.error("createMail() > DISABLE MAIL SSL!");
+				mailConfig.setStarttls(StartTLSOptions.DISABLED);
+			} else {
+				mailConfig.setStarttls(StartTLSOptions.REQUIRED);
+			}
+
 			mailConfig.setUsername(config.getString("user"));
 			mailConfig.setPassword(config.getString("password"));
-			mailConfig.setStarttls(StartTLSOptions.OPTIONAL);
 			mailConfig.setKeepAlive(false);
 
 			return MailClient.createShared(

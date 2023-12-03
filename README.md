@@ -28,6 +28,7 @@ the passwords the same. If you keep the password blank, a random password is gen
   "mail.password" : "", // password or token
   "mail.host": "", // URL of mail server
   "mail.port": 587, //  optional, port of mail server, default is 587
+  "mail.ssl": 'required', //  possible values 'required','optional' or 'disabled'. required is default.
   "admin": "admin@quant-ux.com", // Internal mails will be send to this persons
   "jwt.password": "test", // JWT password
   "auth.service": "", // 'keycloak' or ''

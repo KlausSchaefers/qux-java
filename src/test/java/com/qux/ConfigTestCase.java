@@ -28,12 +28,14 @@ public class ConfigTestCase extends MatcTestCase {
         env.put(Config.ENV_USER_ALLOWED_DOMAINS, "my-server.com");
         env.put(Config.ENV_DEBUG, "true");
         env.put(Config.ENV_MAIL_PORT, "123");
+        env.put(Config.ENV_MAIL_SSL, "optional");
 
         JsonObject mergedConfig = Config.mergeEnvIntoConfig(config, env);
         context.assertEquals("https://other.com", mergedConfig.getString(Config.HTTP_HOST) );
         context.assertEquals(8080, mergedConfig.getInteger(Config.HTTP_PORT));
         context.assertEquals(true, mergedConfig.getBoolean(Config.DEBUG));
-
+        context.assertEquals(true, Config.isMailSSLOptional(mergedConfig));
+        context.assertEquals(false, Config.isMailSSLDisabled(mergedConfig));
 
         context.assertEquals("my-server.com", mergedConfig.getString(Config.USER_ALLOWED_DOMAINS));
         context.assertEquals(false, mergedConfig.getBoolean(Config.USER_ALLOW_SIGNUP));
@@ -46,9 +48,11 @@ public class ConfigTestCase extends MatcTestCase {
 
         Map<String, String> env2 = new HashMap<>();
         env2.put(Config.ENV_USER_ALLOW_SIGNUP, "true");
+        env2.put(Config.ENV_MAIL_SSL, "disabled");
         JsonObject mergedConfig2 = Config.mergeEnvIntoConfig(config, env2);
         context.assertEquals(true, Config.getUserSignUpAllowed(mergedConfig2));
-
+        context.assertEquals(true, Config.isMailSSLDisabled(mergedConfig2));
+        context.assertEquals(false, Config.isMailSSLOptional(mergedConfig2));
 
         Map<String, String> env3 = new HashMap<>();
         env3.put(Config.ENV_USER_ALLOW_SIGNUP, "asdasd");
@@ -73,6 +77,9 @@ public class ConfigTestCase extends MatcTestCase {
         context.assertEquals(true, defaultConfig.getBoolean(Config.USER_ALLOW_SIGNUP));
         context.assertEquals("*", Config.getUserAllowedDomains(defaultConfig));
         context.assertEquals(true, Config.getUserSignUpAllowed(defaultConfig));
+
+        context.assertEquals(false, Config.isMailSSLOptional(config));
+        context.assertEquals(false, Config.isMailSSLDisabled(config));
 
         log("testSetDefaults", "exit");
     }
