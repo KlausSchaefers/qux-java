@@ -43,12 +43,17 @@ public class EventAcl extends MongoAcl implements Acl{
 		}
 		
 	}
-
 	@Override
 	public void canWrite(User user, RoutingContext event,	Handler<Boolean> handler) {
-		handler.handle(false);
+		if(user.hasRole(User.USER)){
+			String appID = event.request().params().get("appID");
+			client.count(team_db, Team.canWrite(user, appID), res->{
+				assertOne(res, handler, event);
+			});
+		} else {
+			handler.handle(false);
+		}
 	}
-
 	@Override
 	public void canDelete(User user, RoutingContext event,	Handler<Boolean> handler) {
 		if(user.hasRole(User.USER)){

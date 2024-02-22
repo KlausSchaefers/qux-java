@@ -2,6 +2,7 @@ package com.qux;
 
 import com.qux.model.App;
 import com.qux.util.rest.MongoREST;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -13,7 +14,44 @@ import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class EventRestTest extends MatcTestCase {
-	
+
+	@Test
+	public void testUpdate(TestContext context){
+		log("testUpdate", "enter");
+
+
+		cleanUp();
+
+		deploy(new MATC(), context);
+
+		/**
+		 * create user & app
+		 */
+		postUser("klaus", context);
+		assertLogin(context, "klaus@quant-ux.de", "123456789");
+		App klaus_app_public = postApp("klaus_private", false, context);
+
+		/**
+		 * add events
+		 */
+
+		postEvent(klaus_app_public, "session", "SessionStart", context);
+
+		JsonArray events = assertList("/rest/events/" + klaus_app_public.getId() +".json", 1, context);
+		context.assertEquals(1, events.size());
+
+		JsonObject event = events.getJsonObject(0);
+		event.put("label", "ABC");
+		updateEvent(klaus_app_public, event.getString("id"), event, context);
+
+		events = assertList("/rest/events/" + klaus_app_public.getId() +".json", 1, context);
+		context.assertEquals(1, events.size());
+		event = events.getJsonObject(0);
+		context.assertEquals("ABC", event.getString("label"));
+
+
+		log("testBatch", "exit");
+	}
 
 
 	@Test
@@ -29,7 +67,7 @@ public class EventRestTest extends MatcTestCase {
 		context.assertEquals(2, result.size());
 		context.assertEquals("Animation", result.get("exclude"));
 		context.assertEquals("true", result.get("batch"));
-		
+
 		result = MongoREST.parseQuery("batch=true&exclude=Animation");
 		context.assertEquals(2, result.size());
 		context.assertEquals("Animation", result.get("exclude"));
@@ -238,7 +276,16 @@ public class EventRestTest extends MatcTestCase {
 		context.assertTrue(!result.containsKey("errors"));
 	
 	}
-	
+
+	public void updateEvent(App app, String id, JsonObject event,  TestContext context){
+		JsonObject result = post("/rest/events/" + app.getId() + "/" + id +".json", event);
+		log("updateEvent", ""+result);
+		context.assertTrue(!result.containsKey("error"));
+		context.assertTrue(!result.containsKey("errors"));
+	}
+
+
+
 	public void postEventError(App app, String session, String type, TestContext context){
 		JsonObject event = new JsonObject()
 			.put("session", session)

@@ -315,6 +315,7 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.GET, "/rest/events/:appID/:session.json").handler(event.findBy());
 		router.route(HttpMethod.GET, "/rest/events/:appID/all/count.json").handler(event.countBy());
 		router.route(HttpMethod.DELETE, "/rest/events/:appID/:session.json").handler(event.deleteBy());
+		router.route(HttpMethod.POST, "/rest/events/:appID/:id.json").handler(event.update());
 			
 		MouseRest mouse = new MouseRest(this.tokenService, client);
 		mouse.setBatch(true);
