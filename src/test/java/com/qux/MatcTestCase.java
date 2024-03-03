@@ -263,11 +263,13 @@ public class MatcTestCase {
 
 	}
 
+	public void print(JsonObject o) {
+		log("print", o.encodePrettily());
+	}
+
 	public void print(JsonArray results) {
 		log("print", "#" + results.size() + " ");
-
 		log("print", results.encodePrettily());
-
 	}
 
 	public void deploy(Verticle v, TestContext context) {

@@ -92,6 +92,33 @@ public class ConfigTestCase extends MatcTestCase {
     }
 
 
+    @Test
+    public void testSSLBug(TestContext context){
+        log("testSSLBug", "enter");
+
+        JsonObject config = new JsonObject();
+
+        Map<String, String> env = new HashMap<>();
+        env.put(Config.ENV_MAIL_HOST, "mail.example.org");
+        env.put(Config.ENV_MAIL_PORT, "587");
+        env.put(Config.ENV_MAIL_PASSWORD, "abc");
+        env.put(Config.ENV_MAIL_SSL, "required");
+        env.put(Config.ENV_MAIL_USER, "mail@example.org");
+
+        JsonObject mergedConfig = Config.mergeEnvIntoConfig(config, env);
+
+        print(mergedConfig);
+        JsonObject mailConfig = Config.getMail(mergedConfig);
+        context.assertEquals(true, Config.isMailSSLRequired(mailConfig));
+        context.assertEquals(false, Config.isMailSSLDisabled(mailConfig));
+        context.assertEquals(false, Config.isMailSSLOptional(mailConfig));
+
+        log("testSSLBug", "exit");
+    }
+
+
+
+
 
 
 }

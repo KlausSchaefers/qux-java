@@ -327,6 +327,8 @@ public class Config {
                 } else {
                     logger.error("mergeMail() > Use 'required','optional' or 'disabled' " + ENV_MAIL_SSL);
                 }
+            } else {
+                result.put(MAIL_SSL, MAIl_SSL_CONFIG.Required.name());
             }
         }
     }
@@ -389,4 +391,13 @@ public class Config {
         }
         return false;
     }
+
+    public static boolean isMailSSLRequired(JsonObject config) {
+        if (config.containsKey("ssl")) {
+            return MAIl_SSL_CONFIG.Required.name().equalsIgnoreCase(config.getString("ssl"));
+        }
+        return false;
+    }
+
 }
+
