@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.qux</groupId>
 	<artifactId>server</artifactId>
-	<version>4.5.4</version>
+	<version>5.1.1</version>
 
 	<properties>
 		<vertx.version>3.9.11</vertx.version>
@@ -186,8 +186,8 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>io.vertx.core.Starter</mainClass>
 									<manifestEntries>
-										<Main-Class>io.vertx.core.Starter</Main-Class>
 										<Main-Verticle>com.qux.MATC</Main-Verticle>
 									</manifestEntries>
 								</transformer>
