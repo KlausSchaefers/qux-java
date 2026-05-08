@@ -8,7 +8,7 @@ RUN mvn -B package --file pom.xml
 
 
 
-FROM openjdk:19-jdk-alpine as runner
+FROM eclipse-temurin:19-jre as runner
 
 WORKDIR /app
 
