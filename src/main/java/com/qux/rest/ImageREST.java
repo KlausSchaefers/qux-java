@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.qux.MATC;
 import com.qux.acl.InvitationACL;
 import com.qux.auth.ITokenService;
 import com.qux.blob.IBlobService;
@@ -61,6 +60,7 @@ public class ImageREST extends MongoREST {
 		this.supportedTypes.add("png");
 		this.supportedTypes.add("jpeg");
 		this.supportedTypes.add("gif");
+		this.supportedTypes.add("svg");
 	}
 	
 

@@ -271,21 +271,11 @@ public class InvitationREST extends MongoREST{
 	
 	
 	public Handler<RoutingContext> addEvents() {
-		return new Handler<RoutingContext>() {
-			@Override
-			public void handle(RoutingContext event) {
-				addEvents(event, event_db);
-			}
-		};
+		return event -> addEvents(event, event_db);
 	}
 	
 	public Handler<RoutingContext> addMouse() {
-		return new Handler<RoutingContext>() {
-			@Override
-			public void handle(RoutingContext event) {
-				addEvents(event, mouse_db );
-			}
-		};
+		return event -> addEvents(event, mouse_db );
 	}
 
 	private void addEvents(RoutingContext event, String db) {
@@ -311,7 +301,7 @@ public class InvitationREST extends MongoREST{
 		json.put("appID", appID);
 		
 		/**
-		 * TODOL Add here some count check...
+		 * TODO Add here some count check...
 		 */
 		mongo.insert(db, json, res->{
 			if(res.succeeded()){
