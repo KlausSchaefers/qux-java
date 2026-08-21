@@ -256,6 +256,7 @@ public class UserREST extends MongoREST {
 		json.put("acceptedTOS", System.currentTimeMillis());
 		json.put("acceptedPrivacy", System.currentTimeMillis());
 		json.put("acceptedGDPR", true);
+		json.put("acceptedAI", System.currentTimeMillis());
 
 		this.mongo.insert(this.table, json, res -> {
 
@@ -307,6 +308,7 @@ public class UserREST extends MongoREST {
 		json.put("acceptedTOS", System.currentTimeMillis());
 		json.put("acceptedPrivacy", System.currentTimeMillis());
 		json.put("acceptedGDPR", true);
+		json.put("acceptedAI", System.currentTimeMillis());
 		
 		mongo.insert(this.table, json, res -> {
 			if (res.succeeded()) {		
@@ -406,6 +408,57 @@ public class UserREST extends MongoREST {
 	}
 	
 	protected void afterUpdate(RoutingContext event, String id, JsonObject json) {
+	}
+
+	/********************************************************************************************
+	 * Update TOS
+	 ********************************************************************************************/
+
+	public Handler<RoutingContext> updateTOS() {
+		return this::updateTOS;
+	}
+
+
+	public void updateTOS(RoutingContext event) {
+
+		String id  = getId(event);
+		if (this.acl != null) {
+			this.acl.canWrite(getUser(event), event, allowed -> {
+				if (allowed) {
+					updateTOS(event, id);
+				} else {
+					User user = getUser(event);
+					error("updateTOS", "User " + user + " tried to  update " + event.request().path());
+					returnError(event, 401);
+				}
+			});
+		} else {
+			returnError(event, 401);
+		}
+	}
+
+	public void updateTOS(RoutingContext event, String id) {
+
+
+		JsonObject json = getJson(event);
+
+		if (json==null) {
+			returnError(event, 405);
+			return;
+		}
+
+		JsonObject update = new JsonObject();
+		User.FIELD_TOS.forEach(field -> {
+			if (json.containsKey(field)) {
+				update.put(field, System.currentTimeMillis());
+			}
+		});
+
+		if (update.isEmpty()) {
+			returnError(event, 405);
+			return;
+		}
+		particalUpdate(event, id, update);
 	}
 
 

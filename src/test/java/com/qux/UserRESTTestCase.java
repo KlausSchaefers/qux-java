@@ -361,6 +361,35 @@ public class UserRESTTestCase extends MatcTestCase {
 
 	}
 
+	@Test
+	public void testTosUpdate(TestContext context){
+		log("testTosUpdate", "enter");
+
+		cleanUp();
+
+		deploy(new MATC(), context);
+
+		User klaus = postUser("klaus", context);
+		assertLogin(context, "klaus@quant-ux.de", "123456789");
+
+		JsonObject loadedUser = get("/rest/user/" + klaus.getId() + ".json");
+		context.assertTrue(loadedUser.getLong("acceptedTOS") > 0);
+		context.assertTrue(loadedUser.containsKey("acceptedAI"));
+
+		JsonObject update = new JsonObject().put("acceptedAI", true);
+		JsonObject result = post("/rest/user/" + klaus.getId() + "/tos.json", update);
+		log("testTosUpdate", "post(tos) > " + result);
+		context.assertTrue(!result.containsKey("errors"));
+
+		JsonObject reloadedUser = get("/rest/user/" + klaus.getId() + ".json");
+		log("testTosUpdate", "get(id) > " + reloadedUser);
+		context.assertTrue(reloadedUser.getLong("acceptedAI") > 0);
+		long now = System.currentTimeMillis();
+		context.assertTrue(reloadedUser.getLong("acceptedAI") <= now);
+		context.assertTrue(reloadedUser.getLong("acceptedAI") > now - 10000);
+
+		log("testTosUpdate", "exit");
+	}
 	
 	
 

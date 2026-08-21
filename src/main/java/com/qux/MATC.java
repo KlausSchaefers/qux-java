@@ -39,7 +39,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "5.1.1";
+	public static final String VERSION = "5.1.17";
 
 	private MongoClient client;
 	
@@ -91,6 +91,7 @@ public class MATC extends AbstractVerticle {
 		initLibrary(router);
 		initBus();
 		initAIProxy(router);
+		initAITokenProxy(router, config);
 
 
 		HttpServerOptions options = new HttpServerOptions()
@@ -281,8 +282,16 @@ public class MATC extends AbstractVerticle {
 		OpenAIProxyRest proxy = new OpenAIProxyRest(this.tokenService, "api.openai.com");
 		router.route(HttpMethod.POST, "/ai/openai.json").handler(proxy::forward);
 	}
-	
-	
+
+	private void initAITokenProxy (Router router, JsonObject config) {
+		logger.info("initAITokenProxy() > enter");
+		String token = config.getString("ai.token", "");
+		String allowedUrls = config.getString("ai.allowed.urls", "");
+		AIProxyREST proxy = new AIProxyREST(tokenService, vertx, client, token, allowedUrls);
+		router.route("/rest/ai-proxy").handler(proxy::proxy);
+		router.route("/rest/ai-proxy/*").handler(proxy::proxy);
+	}
+
 	private void initTestRest(Router router) {
 		
 		TestSettingsRest rest = new TestSettingsRest(this.tokenService, client, TestSetting.class, "testID");
@@ -438,6 +447,8 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.POST, "/rest/user/notification/last.json").handler(user::updateNotificationView);
 		router.route(HttpMethod.GET, "/rest/user/notification/last.json").handler(user::getNotificationView);
 		router.route(HttpMethod.POST, "/rest/user/privacy/update.json").handler(user::updatePrivacy);
+
+		router.route(HttpMethod.POST, "/rest/user/:id/tos.json").handler(user.updateTOS());
 
 		router.route(HttpMethod.POST, "/rest/user/external").handler(user::createExternalIfNotExists);
 

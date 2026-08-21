@@ -1,6 +1,9 @@
 package com.qux.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -23,7 +26,15 @@ public class User extends Model implements Serializable {
 	public static final String STATUS_RETIRED = "retired";
 
 	public static final User GUEST_USER = new User("-1", "Guest", "Guest", "guest@quant-ux.com", GUEST );
-	
+
+	public static final List<String> FIELD_TOS = Collections.unmodifiableList(Arrays.asList("acceptedAI", "acceptedTOS", "acceptedPrivacy", "acceptedGDPR"));
+
+	public static final String FIELD_AI_USAGE = "aiUsage";
+
+	public static final String FIELD_AI_USAGE_TOTAL = "aiUsageTotal";
+
+	public static final int AI_USAGE_LIMIT = 100000000;
+
 
 	private String name;
 	

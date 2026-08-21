@@ -39,7 +39,9 @@ the passwords the same. If you keep the password blank, a random password is gen
   "auth.keycloak.claim.id": "",
   "auth.keycloak.claim.email": "",
   "user.allowSignUp": true,
-  "user.allowedDomains": "*"
+  "user.allowedDomains": "*", 
+  "ai.token": "test-ai-token", 
+  "ai.allowed.urls": "http://localhost"
 }
 ```
 
