@@ -285,8 +285,8 @@ public class MATC extends AbstractVerticle {
 
 	private void initAITokenProxy (Router router, JsonObject config) {
 		logger.info("initAITokenProxy() > enter");
-		String token = config.getString("ai.token", "");
-		String allowedUrls = config.getString("ai.allowed.urls", "");
+		String token = Config.getAIToken(config);
+		String allowedUrls = Config.getAIAllowedUrls(config);
 		AIProxyREST proxy = new AIProxyREST(tokenService, vertx, client, token, allowedUrls);
 		router.route("/rest/ai-proxy").handler(proxy::proxy);
 		router.route("/rest/ai-proxy/*").handler(proxy::proxy);

@@ -66,6 +66,10 @@ public class Config {
 
     public static final String ENV_USER_ALLOWED_DOMAINS = "QUX_USER_ALLOWED_DOMAINS";
 
+    public static final String ENV_AI_TOKEN = "QUX_AI_TOKEN";
+
+    public static final String ENV_AI_ALLOWED_URLS = "QUX_AI_ALLOWED_URLS";
+
     public static final String DEBUG = "debug";
 
     public static final String HTTP_HOST = "http.host";
@@ -118,6 +122,10 @@ public class Config {
     public static final String USER_ALLOW_SIGNUP = "user.allowSignUp";
 
     public static final String USER_ALLOWED_DOMAINS = "user.allowedDomains";
+
+    public static final String AI_TOKEN = "ai.token";
+
+    public static final String AI_ALLOWED_URLS = "ai.allowed.urls";
 
 
 
@@ -176,6 +184,14 @@ public class Config {
         return config.getBoolean(USER_ALLOW_SIGNUP);
     }
 
+    public static String getAIToken(JsonObject config) {
+        return config.getString(AI_TOKEN, "");
+    }
+
+    public static String getAIAllowedUrls(JsonObject config) {
+        return config.getString(AI_ALLOWED_URLS, "");
+    }
+
     public static JsonObject getMongo(JsonObject config) {
         JsonObject mongoConfig = config.getJsonObject("mongo");
         if (mongoConfig == null) {
@@ -217,8 +233,20 @@ public class Config {
         mergeMongo(env, result);
         mergeImage(env, result);
         mergeUser(env, result);
+        mergeAI(env, result);
         return result;
 
+    }
+
+    private static void mergeAI(Map<String, String> env, JsonObject result) {
+        if (env.containsKey(ENV_AI_TOKEN)) {
+            logger.warn("mergeAI() > " + ENV_AI_TOKEN);
+            result.put(AI_TOKEN, env.get(ENV_AI_TOKEN));
+        }
+        if (env.containsKey(ENV_AI_ALLOWED_URLS)) {
+            logger.warn("mergeAI() > " + ENV_AI_ALLOWED_URLS);
+            result.put(AI_ALLOWED_URLS, env.get(ENV_AI_ALLOWED_URLS));
+        }
     }
     private static void mergeDebug(Map<String, String> env, JsonObject result) {
         if (env.containsKey(ENV_DEBUG)) {
