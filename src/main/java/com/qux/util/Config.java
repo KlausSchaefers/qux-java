@@ -30,6 +30,8 @@ public class Config {
 
     public static final String ENV_MAIL_USER = "QUX_MAIL_USER";
 
+    public static final String ENV_MAIL_FROM = "QUX_MAIL_FROM";
+
     public static final String ENV_MAIL_PASSWORD = "QUX_MAIL_PASSWORD";
 
     public static final String ENV_MAIL_HOST = "QUX_MAIL_HOST";
@@ -83,6 +85,8 @@ public class Config {
     public static final String MONGO_CONNECTION_STRING = "mongo.connection_string";
 
     public static final String MAIL_USER = "mail.user";
+
+    public static final String MAIL_FROM = "mail.from";
 
     public static final String MAIL_PASSWORD = "mail.password";
 
@@ -152,6 +156,10 @@ public class Config {
 
             if (config.containsKey(MAIL_SSL)) {
                 mailConfig.put("ssl", config.getString(MAIL_SSL));
+            }
+
+            if (config.containsKey(MAIL_FROM)) {
+                mailConfig.put("from", config.getString(MAIL_FROM));
             }
         }
         return mailConfig;
@@ -330,6 +338,11 @@ public class Config {
         if (env.containsKey(ENV_MAIL_USER)) {
             logger.warn("mergeMail() > " + ENV_MAIL_USER);
             result.put(MAIL_USER, env.get(ENV_MAIL_USER));
+        }
+
+        if (env.containsKey(ENV_MAIL_FROM)) {
+            logger.warn("mergeMail() > " + ENV_MAIL_FROM);
+            result.put(MAIL_FROM, env.get(ENV_MAIL_FROM));
         }
         if (env.containsKey(ENV_MAIL_PASSWORD)) {
             logger.warn("mergeMail() > " + ENV_MAIL_PASSWORD);
