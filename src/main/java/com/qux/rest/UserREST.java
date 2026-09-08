@@ -88,12 +88,7 @@ public class UserREST extends MongoREST {
 
 	
 	public Handler<RoutingContext> login() {
-		return new Handler<RoutingContext>() {
-			@Override
-			public void handle(RoutingContext event) {
-				login(event);
-			}
-		};
+		return this::login;
 	}
 	
 	protected void login(RoutingContext event) {
@@ -713,7 +708,38 @@ public class UserREST extends MongoREST {
 			returnOk(event, "user.notificaiton.update");
 		}
 	}
-	
+
+	public Handler<RoutingContext> refreshToken() {
+		return this::refreshToken;
+	}
+
+	/**
+	 * Issue a fresh token for the currently authenticated user, based on the
+	 * latest data in Mongo (so role/name changes since the old token was
+	 * issued are picked up).
+	 */
+	public void refreshToken(RoutingContext event) {
+		User user = getUser(event);
+		if (user.isGuest()) {
+			error("refreshToken", "Guest tried to refresh token");
+			returnError(event, 401);
+			return;
+		}
+
+		mongo.findOne(table, User.findById(user.getId()), null, res -> {
+			if (res.succeeded() && res.result() != null) {
+				JsonObject json = res.result();
+				String token = this.getTokenService().getToken(json);
+				returnJson(event, new JsonObject().put("token", token));
+			} else {
+				error("refreshToken", "Could not load user " + user.getId());
+				returnError(event, 401);
+			}
+		});
+	}
+
+
+
 	protected JsonObject cleanJson(JsonObject user){
 		user.remove("password");
 		return super.cleanJson(user);

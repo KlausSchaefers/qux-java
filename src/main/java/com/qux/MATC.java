@@ -447,6 +447,7 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.POST, "/rest/user/notification/last.json").handler(user::updateNotificationView);
 		router.route(HttpMethod.GET, "/rest/user/notification/last.json").handler(user::getNotificationView);
 		router.route(HttpMethod.POST, "/rest/user/privacy/update.json").handler(user::updatePrivacy);
+		router.route(HttpMethod.POST, "/rest/user/token/refresh.json").handler(user.refreshToken());
 
 		router.route(HttpMethod.POST, "/rest/user/:id/tos.json").handler(user.updateTOS());
 

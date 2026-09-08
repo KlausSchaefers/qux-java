@@ -390,7 +390,58 @@ public class UserRESTTestCase extends MatcTestCase {
 
 		log("testTosUpdate", "exit");
 	}
-	
-	
+
+	@Test
+	public void testRefreshToken(TestContext context){
+		log("testRefreshToken", "enter");
+
+		cleanUp();
+
+		deploy(new MATC(), context);
+
+		User klaus = postUser("klaus", context);
+
+		/**
+		 * Guest cannot get a token
+		 */
+		JsonObject guestResult = post("/rest/user/token/refresh.json", new JsonObject());
+		context.assertTrue(guestResult.containsKey("error"), "Guest should not get a token");
+
+		/**
+		 * Now login and refresh the token
+		 */
+		JsonObject login = assertLogin(context, "klaus@quant-ux.de", "123456789");
+		String oldToken = login.getString("token");
+
+		sleep(1000);
+
+		JsonObject result = post("/rest/user/token/refresh.json", new JsonObject());
+		log("testRefreshToken", "refresh > " + result);
+		context.assertTrue(!result.containsKey("errors"));
+		context.assertTrue(result.containsKey("token"));
+
+		String newToken = result.getString("token");
+		context.assertNotNull(newToken);
+		context.assertNotEquals(oldToken, newToken);
+
+		/**
+		 * New token must be usable to fetch the current user
+		 */
+		setJWT(newToken);
+		JsonObject current = get("/rest/user/");
+		context.assertEquals("klaus@quant-ux.de", current.getString("email"));
+
+
+		/**
+		 * test hack
+		 */
+		setJWT("sdadasdasdasd");
+		JsonObject hackResult = post("/rest/user/token/refresh.json", new JsonObject());
+		log("testRefreshToken", "refresh > " + hackResult);
+		context.assertTrue(hackResult.containsKey("error"), "Guest should not get a token");
+
+		log("testRefreshToken", "exit");
+	}
+
 
 }
