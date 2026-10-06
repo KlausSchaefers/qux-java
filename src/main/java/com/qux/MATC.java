@@ -39,7 +39,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "5.1.17";
+	public static final String VERSION = "5.1.18";
 
 	private MongoClient client;
 	
@@ -257,7 +257,7 @@ public class MATC extends AbstractVerticle {
 			return MailClient.createShared(
 					vertx,
 					mailConfig,
-					Config.getHttpHost(config)
+					config.getString("host")   // was: Config.getHttpHost(config)
 			);
 		}
 	}
