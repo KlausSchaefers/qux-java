@@ -75,6 +75,23 @@ public class FileSystemService implements IBlobService{
 
     public void deleteFile(RoutingContext event, String folder, String fileName, Handler<Boolean> handler) {
         String file = imageFolder +"/" + folder + "/" + fileName;
+        try {
+            String baseCanonical = new java.io.File(imageFolder).getCanonicalPath();
+            String fileCanonical = new java.io.File(file).getCanonicalPath();
+            if (!fileCanonical.equals(baseCanonical) && !fileCanonical.startsWith(baseCanonical + java.io.File.separator)) {
+                logger.error("delete() > Path traversal attempt detected !" + file);
+                if (handler != null) {
+                    handler.handle(false);
+                }
+                return;
+            }
+        } catch (java.io.IOException e) {
+            logger.error("delete() > Could not resolve canonical path !" + file, e);
+            if (handler != null) {
+                handler.handle(false);
+            }
+            return;
+        }
         FileSystem fs = event.vertx().fileSystem();
         fs.delete(file, deleteResult->{
             if(!deleteResult.succeeded()){
