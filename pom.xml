@@ -6,7 +6,7 @@
 	<version>4.5.4</version>
 
 	<properties>
-		<vertx.version>3.9.11</vertx.version>
+		<vertx.version>4.5.24</vertx.version>
 		<log4j2.version>2.17.1</log4j2.version>
 		<handlebars-version>2.2.2</handlebars-version>
 		<maven.test.skip>true</maven.test.skip>
