@@ -18,8 +18,24 @@ public class FileSystemService implements IBlobService{
         this.imageFolder = imageFolder;
     }
 
+    private boolean isInsideBase(String path) {
+        try {
+            String baseCanonical = new java.io.File(imageFolder).getCanonicalPath();
+            String fileCanonical = new java.io.File(path).getCanonicalPath();
+            return fileCanonical.startsWith(baseCanonical + java.io.File.separator);
+        } catch (java.io.IOException e) {
+            logger.error("isInsideBase() > Could not resolve canonical path !" + path, e);
+            return false;
+        }
+    }
+
     public void setBlob(RoutingContext event, String source, String target, Handler<Boolean> handler) {
         logger.info("setBlob() > enter");
+        if (!isInsideBase(target)) {
+            logger.error("setBlob() > Path traversal attempt detected !" + target);
+            handler.handle(false);
+            return;
+        }
         FileSystem fs = event.vertx().fileSystem();
         fs.move(source, target , moveResult-> {
             if (moveResult.succeeded()) {
@@ -36,6 +52,11 @@ public class FileSystemService implements IBlobService{
         FileSystem fs = event.vertx().fileSystem();
         String sourceFile = imageFolder + "/" + source;
         String targetFile = imageFolder + "/" + target;
+        if (!isInsideBase(sourceFile) || !isInsideBase(targetFile)) {
+            logger.error("copyBlob() > Path traversal attempt detected !" + sourceFile + " " + targetFile);
+            handler.handle(false);
+            return;
+        }
         fs.copy(sourceFile, targetFile, fileResult ->{
             if(!fileResult.succeeded()){
                handler.handle(true);
@@ -49,6 +70,12 @@ public class FileSystemService implements IBlobService{
     public void getBlob(RoutingContext event, String folder, String image) {
         logger.info("getBlob() > enter");
         String file = imageFolder +"/" + folder + "/" + image ;
+        if (!isInsideBase(file)) {
+            logger.error("getBlob() > Path traversal attempt detected !" + file);
+            event.response().setStatusCode(404);
+            event.response().end();
+            return;
+        }
         FileSystem fs = event.vertx().fileSystem();
         fs.exists(file, exists-> {
             if(exists.succeeded() && exists.result()){
@@ -68,6 +95,10 @@ public class FileSystemService implements IBlobService{
         logger.info("createFolder() > enter > " + folderName);
         FileSystem fs = event.vertx().fileSystem();
         String folder = imageFolder +"/" + folderName;
+        if (!isInsideBase(folder)) {
+            logger.error("createFolder() > Path traversal attempt detected !" + folder);
+            throw new IllegalArgumentException("Invalid folder name");
+        }
         fs.mkdirsBlocking(folder);
         return folder;
     }
@@ -75,18 +106,8 @@ public class FileSystemService implements IBlobService{
 
     public void deleteFile(RoutingContext event, String folder, String fileName, Handler<Boolean> handler) {
         String file = imageFolder +"/" + folder + "/" + fileName;
-        try {
-            String baseCanonical = new java.io.File(imageFolder).getCanonicalPath();
-            String fileCanonical = new java.io.File(file).getCanonicalPath();
-            if (!fileCanonical.equals(baseCanonical) && !fileCanonical.startsWith(baseCanonical + java.io.File.separator)) {
-                logger.error("delete() > Path traversal attempt detected !" + file);
-                if (handler != null) {
-                    handler.handle(false);
-                }
-                return;
-            }
-        } catch (java.io.IOException e) {
-            logger.error("delete() > Could not resolve canonical path !" + file, e);
+        if (!isInsideBase(file)) {
+            logger.error("delete() > Path traversal attempt detected !" + file);
             if (handler != null) {
                 handler.handle(false);
             }

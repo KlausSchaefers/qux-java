@@ -88,6 +88,46 @@ public class ImageRestTest extends MatcTestCase {
 		
 	}
 
+	@Test
+	public void testHack(TestContext context) throws InterruptedException, IOException {
+		log("testHack", "enter");
+
+		cleanUp();
+		deploy(new MATC(), context);
+
+		User klaus = postUser("klaus", context);
+		assertLogin(context, klaus, "123456789");
+
+		App app = postApp("klaus_app_private", false, context);
+		postImage(app, context, "test.png");
+		JsonArray images = assertList("/rest/images/" + app.getId() + ".json", 1, context);
+		String valid = images.getJsonObject(0).getString("url");
+
+		String[] attacks = {
+			app.getId() + "/..%2F..%2F..%2Fetc%2Fpasswd",
+			app.getId() + "/%2e%2e%2f%2e%2e%2fpom.xml",
+			app.getId() + "/..%252F..%252Fpom.xml",
+			"..%2F" + app.getId() + "%2Ftest.png",
+			"..%2F..%2Fpom.xml",
+			app.getId() + "/..%5C..%5Cpom.xml",
+			app.getId() + "/%00.png",
+			"../../../../etc/passwd"
+		};
+
+		for (String attack : attacks) {
+			InputStream is = getRaw("/rest/images/" + attack + "?token=" + this.getJWT());
+			log("testHack", attack + " > " + (is == null ? "blocked" : "LEAKED"));
+			context.assertNull(is, "Path traversal not blocked: " + attack);
+		}
+
+		/**
+		 * The legit image is still served
+		 */
+		InputStream is = getRaw("/rest/images/" + valid + "?token=" + this.getJWT());
+		context.assertNotNull(is);
+		is.close();
+	}
+
 	private void assertRaw(TestContext context, App app, JsonArray images) throws IOException {
 		for(int i=0; i< images.size();i++){
 			JsonObject img = images.getJsonObject(i);
