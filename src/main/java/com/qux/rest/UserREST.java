@@ -740,8 +740,11 @@ public class UserREST extends MongoREST {
 
 
 
-	protected JsonObject cleanJson(JsonObject user){
+	protected JsonObject cleanJson(JsonObject user) {
 		user.remove("password");
+		for (String field : User.HIDDEN_FIELDS){
+			user.remove(field);
+		}
 		return super.cleanJson(user);
 	}
 

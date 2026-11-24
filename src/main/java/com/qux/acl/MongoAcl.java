@@ -26,6 +26,10 @@ public abstract class MongoAcl  {
 		this.id = id;
 	}
 	
+	protected void assertOne(AsyncResult<Long> res, Handler<Boolean> handler, RoutingContext event, com.qux.model.User user){
+		assertOne(res, handler, event);
+	}
+
 	protected void assertOne(AsyncResult<Long> res, Handler<Boolean> handler, RoutingContext event){
 		if(res.succeeded()){
 			

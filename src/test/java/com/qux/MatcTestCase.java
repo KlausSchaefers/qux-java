@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 
 import com.qux.acl.Acl;
 import com.qux.mocks.SyncMongoClient;
+import com.qux.model.*;
 import com.qux.util.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,22 +31,6 @@ import org.junit.Before;
 
 import com.google.common.io.CharStreams;
 
-import com.qux.model.Annotation;
-import com.qux.model.App;
-import com.qux.model.Command;
-import com.qux.model.CommandStack;
-import com.qux.model.Comment;
-import com.qux.model.Event;
-import com.qux.model.Image;
-import com.qux.model.Invitation;
-import com.qux.model.Library;
-import com.qux.model.LibraryTeam;
-import com.qux.model.Model;
-import com.qux.model.Mouse;
-import com.qux.model.Notification;
-import com.qux.model.Team;
-import com.qux.model.TestSetting;
-import com.qux.model.User;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
@@ -71,7 +56,8 @@ public class MatcTestCase {
 	public JSONMapper mapper = new JSONMapper();
 
 	protected String team_db, inv_db, app_db, user_db, commandStack_db, comments_db, event_db, image_db,
-			annotation_db, command_db,mouse_db, notification_db, testsetting_db, lib_db, lib_team_db;
+			annotation_db, command_db,mouse_db, notification_db, testsetting_db, lib_db, lib_team_db,
+			agentToken_db, agentGrant_db, agentClient_db;
 
 	protected BasicCookieStore cookieStore;
 
@@ -135,6 +121,10 @@ public class MatcTestCase {
 		testsetting_db = DB.getTable(TestSetting.class);
 		lib_db = DB.getTable(Library.class);
 		lib_team_db = DB.getTable(LibraryTeam.class);
+
+		agentToken_db = DB.getTable(AgentToken.class);
+		agentGrant_db = DB.getTable(AgentGrant.class);
+		agentClient_db = DB.getTable(AgentClient.class);
 		
 		cookieStore = new BasicCookieStore();
 		jwt = null;
@@ -208,6 +198,10 @@ public class MatcTestCase {
 		client.remove(lib_db, Model.all());
 		client.remove(lib_team_db, Model.all());
 
+		client.remove(agentToken_db, Model.all());
+		client.remove(agentGrant_db, Model.all());
+		client.remove(agentClient_db, Model.all());
+
 		debug("cleanUp", "# " + app_db + "  : " + client.count(app_db, App.all()));
 		debug("cleanUp", "# " + user_db + " : " + client.count(user_db, App.all()));
 		debug("cleanUp", "# " + commandStack_db + " : " + client.count(commandStack_db, App.all()));
@@ -220,6 +214,10 @@ public class MatcTestCase {
 		debug("cleanup", "# " + testsetting_db + " : " + client.count(testsetting_db, App.all()));
 		debug("cleanup", "# " + lib_db + " : " + client.count(lib_db, App.all()));
 		debug("cleanup", "# " + lib_team_db + " : " + client.count(lib_team_db, App.all()));
+
+		debug("cleanup", "# " + agentToken_db + " : " + client.count(agentToken_db, App.all()));
+		debug("cleanup", "# " + agentGrant_db + " : " + client.count(agentGrant_db, App.all()));
+		debug("cleanup", "# " + agentClient_db + " : " + client.count(agentClient_db, App.all()));
 
 	}
 

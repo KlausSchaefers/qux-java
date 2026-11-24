@@ -1,9 +1,11 @@
 package com.qux.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -13,33 +15,65 @@ import io.vertx.ext.web.Session;
 
 
 public class User extends Model implements Serializable {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -9119653686209363893L;
 
-	public static final String USER = "user";
-	
-	public static final String GUEST = "guest";
+	@Serial
+    private static final long serialVersionUID = -9119653686209363893L;
 
-	public static final String STATUS_RETIRED = "retired";
-
-	public static final User GUEST_USER = new User("-1", "Guest", "Guest", "guest@quant-ux.com", GUEST );
-
-	public static final List<String> FIELD_TOS = Collections.unmodifiableList(Arrays.asList("acceptedAI", "acceptedTOS", "acceptedPrivacy", "acceptedGDPR"));
+	public static final List<String> FIELD_TOS = List.of("acceptedAI", "acceptedTOS", "acceptedPrivacy", "acceptedGDPR");
 
 	public static final String FIELD_AI_USAGE = "aiUsage";
 
 	public static final String FIELD_AI_USAGE_TOTAL = "aiUsageTotal";
 
+	public static final String FIELD_NUMBER_OF_HACKS = "hackCount";
+
+	public static final String FIELD_FAIlED_LOGINS = "failedLoginAttempts";
+
+	public static final String FIELD_LOGIN_COUNTS= "loginCount";
+
+	public static final String FIELD_LAST_LOGIN = "lastlogin";
+
+	public static final String FIELD_PASSWORD_RESET_COUNT = "passwordResetCount";
+
+	public static final String FIELD_PASSWORD_RESET_KEY = "passwordRestKey";
+
+	public static Set<String> HIDDEN_FIELDS = Set.of(
+			FIELD_NUMBER_OF_HACKS,
+			FIELD_LOGIN_COUNTS,
+			FIELD_FAIlED_LOGINS,
+			FIELD_PASSWORD_RESET_COUNT,
+			FIELD_PASSWORD_RESET_KEY
+	);
+
+
+
+
 	public static final int AI_USAGE_LIMIT = 100000000;
+
+	public static final int AI_USAGE_DEFAULT_BUDGET = 20;
+
+	public static final int AI_USAGE_MAX_BUDGET = 1000;
+
+	public static final String USER = "user";
+
+	public static final String GUEST = "guest";
+
+	public static final String STAFF = "staff";
+
+	public static final String ADMIN = "admin";
+
+	public static final String TOKEN = "token";
+
+	public static final String STATUS_RETIRED = "retired";
+
+
+	public static final User GUEST_USER = new User("-1", "Guest", "Guest", "guest@quant-ux.com", GUEST );
 
 
 	private String name;
-	
+
 	private String lastname;
-	
+
 	private String email = "guest@guest.com";
 
 	private String role = "guest";
@@ -47,35 +81,53 @@ public class User extends Model implements Serializable {
 	private String tel;
 
 	private String image;
-	
+
 	private String about;
-	
+
 	private String homepage;
 
 	private String facebook;
-	
+
 	private String status;
-		
+
 	private long lastlogin = 0;
-	
+
 	private long lastNotification = 0;
-	
+
 	private String password;
-	
+
 	private boolean tos;
-	
+
 	private String[] has;
-	
+
 	private long paidUntil;
 
+	private String plan = "Free";
+
 	private boolean acceptedGDPR = false;
-	
+
 	private String domain = "";
 
+
+	private String appID = "";
+
+	private int appPermission = -1;
+
+	/*
+	 * Set when the user calls with an agent token (see AgentACL)
+	 */
+	private String agentTokenID;
+
+	// null: all apps the user can access
+	private List<String> agentAppIDs;
+
+	private List<String> agentScopes;
+
+
 	public User(){
-		
+
 	}
-	
+
 	public User(String id){
 		this._id = id;
 	}
@@ -88,19 +140,21 @@ public class User extends Model implements Serializable {
 		this.role = role;
 	}
 
+
+
 	public static User formSession(RoutingContext event){
 		Session session = event.session();
-		
+
 		if(session!=null && session.get("session.user")!=null){
 			return session.get("session.user");
-		} 
+		}
 		return User.GUEST_USER;
 	}
-	
+
 	/*********************************************************************
 	 *  Getters and Setters
 	 *********************************************************************/
-	
+
 	public String getName() {
 		return name;
 	}
@@ -222,7 +276,7 @@ public class User extends Model implements Serializable {
 	public void setTos(boolean tos) {
 		this.tos = tos;
 	}
-	
+
 	public String[] getHas() {
 		return has;
 	}
@@ -230,7 +284,7 @@ public class User extends Model implements Serializable {
 	public void setHas(String[] has) {
 		this.has = has;
 	}
-	
+
 	public long getLastNotification() {
 		return lastNotification;
 	}
@@ -252,8 +306,20 @@ public class User extends Model implements Serializable {
 		return User.GUEST.equals(getRole());
 	}
 	@JsonIgnore
+	public boolean isAdmin() {
+		return User.ADMIN.equals(getRole());
+	}
+	@JsonIgnore
 	public boolean isUser() {
 		return User.USER.equals(getRole());
+	}
+
+	public String getPlan() {
+		return plan;
+	}
+
+	public void setPlan(String plan) {
+		this.plan = plan;
 	}
 
 	public boolean isAcceptedGDPR() {
@@ -263,7 +329,7 @@ public class User extends Model implements Serializable {
 	public void setAcceptedGDPR(boolean acceptedGDPR) {
 		this.acceptedGDPR = acceptedGDPR;
 	}
-	
+
 	public String getDomain() {
 		return domain;
 	}
@@ -273,40 +339,110 @@ public class User extends Model implements Serializable {
 	}
 
 
-	
-	
-	
 	/*********************************************************************
 	 *  ACL stuff
 	 *********************************************************************/
 
+	public boolean hasClaim() {
+		return TOKEN.equals(this.role) && this.appID.length() > 0 && this.appPermission != -1;
+	}
 
 	public boolean hasRole(String role){
-		
+
 		/**
 		 * Guest is the lowest role. users and guests have it
 		 */
 		if(role == User.GUEST){
-			return User.GUEST.equals(this.role) || User.USER.equals(this.role);
+			return User.GUEST.equals(this.role) || User.USER.equals(this.role) || User.ADMIN.equals(this.role) || User.STAFF.equals(this.role) || User.TOKEN.equals(this.role);
 		}
-		
+
 		if(role == User.USER){
-			return User.USER.equals(this.role) ;
+			return User.USER.equals(this.role) || User.ADMIN.equals(this.role) || User.STAFF.equals(this.role)  || User.TOKEN.equals(this.role);
 		}
-		
+
+		if(role == User.STAFF){
+			return User.ADMIN.equals(this.role) || User.STAFF.equals(this.role);
+		}
+
+		if(role == User.ADMIN){
+			return User.ADMIN.equals(this.role);
+		}
+
 		return false;
 	}
-	
-	
+
+	public String getAppID() {
+		return appID;
+	}
+
+	public void setAppID(String appID) {
+		this.appID = appID;
+	}
+
+	public int getAppPermission() {
+		return appPermission;
+	}
+
+	public void setAppPermission(int appPermission) {
+		this.appPermission = appPermission;
+	}
+
+	/*********************************************************************
+	 *  Agent tokens
+	 *********************************************************************/
+
+	public void setAgent(String tokenID, List<String> appIDs, List<String> scopes) {
+		this.agentTokenID = tokenID;
+		this.agentAppIDs = appIDs;
+		this.agentScopes = scopes;
+	}
+
+	/**
+	 * Whether the token has the scope (AgentToken.SCOPE_*). The web app can
+	 * do everything its ACL allows.
+	 */
+	public boolean hasAgentScope(String scope) {
+		return !isAgent() || (agentScopes != null && agentScopes.contains(scope));
+	}
+
+	@JsonIgnore
+	public boolean isAgent() {
+		return this.agentTokenID != null;
+	}
+
+	@JsonIgnore
+	public String getAgentTokenID() {
+		return agentTokenID;
+	}
+
+	@JsonIgnore
+	public List<String> getAgentAppIDs() {
+		return agentAppIDs;
+	}
+
+	public boolean isAppAllowed(String appID) {
+		return !isAgent() || agentAppIDs == null || agentAppIDs.contains(appID);
+	}
+
+
 	/*********************************************************************
 	 *  Queries
 	 *********************************************************************/
 
-	
+
 	public static JsonObject findByEmail(String email){
-		 return new JsonObject()
-	    	.put("email", email.toLowerCase());
+		return new JsonObject()
+				.put("email", email.toLowerCase());
 	}
+
+
+	public static JsonObject findExpired(){
+		return new JsonObject()
+				.put("paidUntil", new JsonObject().put("$lt", System.currentTimeMillis()))
+				.put("plan",  new JsonObject().put("$ne", "Free"));
+	}
+
+
 
 
 }

@@ -1,4 +1,4 @@
-FROM maven:3-openjdk-18 as builder
+FROM maven:3-eclipse-temurin-21 as builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN mvn -B package --file pom.xml
 
 
 
-FROM eclipse-temurin:19-jre as runner
+FROM eclipse-temurin:21-jre as runner
 
 WORKDIR /app
 

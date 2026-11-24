@@ -361,7 +361,8 @@ public abstract class CrudREST extends REST {
 		MultiMap map = event.request().params();
 		List<Entry<String, String>> list = map.entries();
 		for(Entry<String,String> entry : list){
-			if(entry.getValue() != null){
+			// first occurrence wins, consistent with getParam() used by ACL checks
+			if(entry.getValue() != null && !query.containsKey(entry.getKey())){
 				query.put(entry.getKey(),entry.getValue());
 			}
 		}
@@ -376,7 +377,7 @@ public abstract class CrudREST extends REST {
 
 		for(Entry<String,String> entry : list){
 			if(!excluded.contains(entry.getKey())){
-				if(entry.getValue() != null){
+				if(entry.getValue() != null && !query.containsKey(entry.getKey())){
 					query.put(entry.getKey(),entry.getValue());
 				}
 			}			

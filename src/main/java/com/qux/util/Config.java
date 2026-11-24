@@ -70,6 +70,8 @@ public class Config {
 
     public static final String ENV_AI_ALLOWED_URLS = "QUX_AI_ALLOWED_URLS";
 
+    public static final String ENV_OAUTH_ISSUER = "QUX_OAUTH_ISSUER";
+
     public static final String DEBUG = "debug";
 
     public static final String HTTP_HOST = "http.host";
@@ -126,6 +128,8 @@ public class Config {
     public static final String AI_TOKEN = "ai.token";
 
     public static final String AI_ALLOWED_URLS = "ai.allowed.urls";
+
+    public static final String OAUTH_ISSUER = "oauth.issuer";
 
 
 
@@ -234,8 +238,16 @@ public class Config {
         mergeImage(env, result);
         mergeUser(env, result);
         mergeAI(env, result);
+        mergeOAuth(env, result);
         return result;
 
+    }
+
+    private static void mergeOAuth(Map<String, String> env, JsonObject result) {
+        if (env.containsKey(ENV_OAUTH_ISSUER)) {
+            logger.warn("mergeOAuth() > " + ENV_OAUTH_ISSUER);
+            result.put(OAUTH_ISSUER, env.get(ENV_OAUTH_ISSUER));
+        }
     }
 
     private static void mergeAI(Map<String, String> env, JsonObject result) {

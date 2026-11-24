@@ -39,7 +39,10 @@ public class AppAcl extends MongoAcl implements Acl{
 
 	@Override
 	public void canRead(User user, RoutingContext event, Handler<Boolean> handler) {
-		String appID = getId(event);
+		canRead(user, event, getId(event), handler);
+	}
+
+	public void canRead(User user, RoutingContext event, String appID, Handler<Boolean> handler) {
 		logger.debug("canRead() > "+ appID);
 		
 		/**

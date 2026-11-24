@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class Model {
-	
+
+	public static final String FIELD_CREATED = "created";
+
 	protected String _id;
 	
 	protected long created = 0;

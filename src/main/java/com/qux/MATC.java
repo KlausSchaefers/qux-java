@@ -8,6 +8,7 @@ import com.qux.blob.FileSystemService;
 import com.qux.blob.IBlobService;
 import com.qux.blob.S3BlobService;
 import com.qux.rest.*;
+import com.qux.services.AgentTokenService;
 import com.qux.util.*;
 import com.qux.auth.QUXTokenService;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 public class MATC extends AbstractVerticle {
 	
-	public static final String VERSION = "5.1.18";
+	public static final String VERSION = "6.0.0.alpha";
 
 	private MongoClient client;
 	
@@ -56,7 +57,9 @@ public class MATC extends AbstractVerticle {
 	public static String MAIL_USER = "";
 
 	private ITokenService tokenService;
-	
+
+	private AgentTokenService agentTokens;
+
 	@Override
 	public void start() {
 		this.logger.info("start() > enter");
@@ -92,6 +95,10 @@ public class MATC extends AbstractVerticle {
 		initBus();
 		initAIProxy(router);
 		initAITokenProxy(router, config);
+
+		initAgentAuthConfig(config);
+		initAgentAuth(router);
+		initAIRest(router, config);
 
 
 		HttpServerOptions options = new HttpServerOptions()
@@ -278,6 +285,26 @@ public class MATC extends AbstractVerticle {
 		router.route(HttpMethod.POST, "/rest/commands/:appID/redo").handler(commandStack.redo());
 	}
 
+	private void initAIRest(Router router, JsonObject config) {
+		logger.info("initAIRest() > enter");
+
+		// the images of an app are part of the AI API, the agents have no other way to them
+		IBlobService blobService = getBlockService(config.getString("image.folder.apps"), config);
+		ImageREST image = new ImageREST(this.tokenService, blobService, client, config.getLong("image.size"));
+		AIRest ai = new AIRest(this.tokenService, client, image);
+
+		/*
+		 * only for agents, with an agent token, see AgentACL. The JWT of the web app is refused.
+		 */
+		router.route(HttpMethod.GET, "/rest/ai/me.json").handler(ai::me);
+		router.route(HttpMethod.GET, "/rest/ai/apps.json").handler(ai::listApps);
+		router.route(HttpMethod.GET, "/rest/ai/apps/:appID.json").handler(ai::getApp);
+		router.route(HttpMethod.POST, "/rest/ai/apps.json").handler(ai::createApp);
+		router.route(HttpMethod.POST, "/rest/ai/apps/:appID/screens.json").handler(ai::addScreens);
+		router.route(HttpMethod.POST, "/rest/ai/apps/:appID/images.json").handler(ai::addImage);
+		router.route(HttpMethod.GET, "/rest/ai/apps/:appID/images/:image").handler(ai::getImage);
+	}
+
 	private void initAIProxy (Router router) {
 		OpenAIProxyRest proxy = new OpenAIProxyRest(this.tokenService, "api.openai.com");
 		router.route(HttpMethod.POST, "/ai/openai.json").handler(proxy::forward);
@@ -290,6 +317,37 @@ public class MATC extends AbstractVerticle {
 		AIProxyREST proxy = new AIProxyREST(tokenService, vertx, client, token, allowedUrls);
 		router.route("/rest/ai-proxy").handler(proxy::proxy);
 		router.route("/rest/ai-proxy/*").handler(proxy::proxy);
+	}
+
+	private void initAgentAuthConfig(JsonObject config) {
+		logger.info("initAgentAuthConfig() > enter");
+		OAuthConfig.init(config);
+		agentTokens = new AgentTokenService(client);
+	}
+
+	/**
+	 * OAuth 2.1 for agents and the list of connected agents, see OAuthREST
+	 */
+	private void initAgentAuth(Router router) {
+		logger.info("initAgentAuth() > enter");
+
+		OAuthREST oauth = new OAuthREST(this.tokenService, client, agentTokens);
+		router.route(HttpMethod.GET, "/.well-known/oauth-authorization-server").handler(oauth::authorizationServerMetadata);
+		router.route(HttpMethod.GET, "/.well-known/oauth-authorization-server/*").handler(oauth::authorizationServerMetadata);
+		router.route(HttpMethod.POST, "/oauth/register").handler(oauth::register);
+		router.route(HttpMethod.GET, "/oauth/authorize").handler(oauth::authorize);
+		router.route(HttpMethod.POST, "/oauth/token").handler(oauth::token);
+
+		// the consent page of the web app
+		router.route(HttpMethod.GET, "/oauth/requests/:requestID.json").handler(oauth::getRequest);
+		router.route(HttpMethod.POST, "/oauth/requests/:requestID/approve").handler(oauth::approveRequest);
+		router.route(HttpMethod.POST, "/oauth/requests/:requestID/deny").handler(oauth::denyRequest);
+
+		AgentTokenREST tokens = new AgentTokenREST(this.tokenService, client, agentTokens);
+		router.route(HttpMethod.GET, "/rest/agent-tokens.json").handler(tokens::list);
+		router.route(HttpMethod.POST, "/rest/agent-tokens.json").handler(tokens::create);
+		router.route(HttpMethod.DELETE, "/rest/agent-tokens.json").handler(tokens::revokeAll);
+		router.route(HttpMethod.DELETE, "/rest/agent-tokens/:tokenID.json").handler(tokens::revoke);
 	}
 
 	private void initTestRest(Router router) {
